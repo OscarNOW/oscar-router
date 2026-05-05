@@ -438,7 +438,7 @@ describe('features: route matching and fallthrough', () => {
         }
     });
 
-    test('rejects HEAD before wildcard handlers run', async () => {
+    test('treats HEAD as GET and runs wildcard handlers with no body', async () => {
         let handlerReached = false;
         const server = await createTestServer(lrHandler('*', '/head', null, () => {
             handlerReached = true;
@@ -450,9 +450,54 @@ describe('features: route matching and fallthrough', () => {
             path: '/head',
         });
 
-        expect(response.status).toBe(500);
+        expect(response.status).toBe(200);
+        expect(response.headers['content-type']).toBe('application/json; charset=utf-8');
         expect(response.body).toBe('');
-        expect(handlerReached).toBe(false);
+        expect(handlerReached).toBe(true);
+    });
+
+    test('HEAD request matches GET handlers and returns no body', async () => {
+        const server = await createTestServer(lrHandler(['GET'], '/resource', null, () => {
+            return lrResponse().json({ data: 'test' } as const);
+        }));
+
+        const response = await httpRequest(server, {
+            method: 'HEAD',
+            path: '/resource',
+        });
+
+        expect(response.status).toBe(200);
+        expect(response.headers['content-type']).toBe('application/json; charset=utf-8');
+        expect(response.body).toBe('');
+    });
+
+    test('HEAD request appears as GET in handler', async () => {
+        let handlerMethod = '';
+        const server = await createTestServer(lrHandler(['GET'], '/method-check', null, (req: any) => {
+            handlerMethod = req.method;
+            return lrResponse().json({ method: req.method } as const);
+        }));
+
+        await httpRequest(server, {
+            method: 'HEAD',
+            path: '/method-check',
+        });
+
+        expect(handlerMethod).toBe('GET');
+    });
+
+    test('HEAD request to unmatched path returns 404 with no body', async () => {
+        const server = await createTestServer(lrHandler(['GET'], '/known', null, () => {
+            return lrResponse().json({ ok: true } as const);
+        }));
+
+        const response = await httpRequest(server, {
+            method: 'HEAD',
+            path: '/unknown',
+        });
+
+        expect(response.status).toBe(404);
+        expect(response.body).toBe('');
     });
 
     test('runs later matching handlers when an earlier handler returns lrNext', async () => {
