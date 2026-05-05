@@ -1442,6 +1442,74 @@ describe('security: body parsing', () => {
         expect(JSON.parse(response.body)).toEqual({ ok: false });
     });
 
+    describe('exported functions: invalid argument handling', () => {
+        describe('lrHandler', () => {
+            test('throws when methods is not an array or valid method string', () => {
+                expect(() => lrHandler(123 as any, '/path', null, (() => { }) as any)).toThrow();
+                expect(() => lrHandler({} as any, '/path', null, (() => { }) as any)).toThrow();
+                expect(() => lrHandler(null as any, '/path', null, (() => { }) as any)).toThrow();
+            });
+
+            test('throws when path is not a string', () => {
+                expect(() => lrHandler(['GET'], 123 as any, null, (() => { }) as any)).toThrow();
+                expect(() => lrHandler(['GET'], {} as any, null, (() => { }) as any)).toThrow();
+                expect(() => lrHandler(['GET'], null as any, null, (() => { }) as any)).toThrow();
+            });
+
+            test('throws when handler is not a function', () => {
+                expect(() => lrHandler(['GET'], '/path', null, 'not a function' as any)).toThrow();
+                expect(() => lrHandler(['GET'], '/path', null, 123 as any)).toThrow();
+                expect(() => lrHandler(['GET'], '/path', null, {} as any)).toThrow();
+            });
+
+            test('throws when validations is invalid type', () => {
+                expect(() => lrHandler(['GET'], '/path', 'invalid' as any, (() => { }) as any)).toThrow();
+                expect(() => lrHandler(['GET'], '/path', 123 as any, (() => { }) as any)).toThrow();
+            });
+        });
+
+        describe('lrRouter', () => {
+            test('throws when prefix is not a string', () => {
+                expect(() => lrRouter(123 as any, [])).toThrow();
+                expect(() => lrRouter({} as any, [])).toThrow();
+                expect(() => lrRouter(null as any, [])).toThrow();
+            });
+
+            test('throws when handlers is not an array', () => {
+                expect(() => lrRouter('', 'not array' as any)).toThrow();
+                expect(() => lrRouter('', 123 as any)).toThrow();
+                expect(() => lrRouter('', null as any)).toThrow();
+            });
+
+            test('throws when handlers array contains invalid items', () => {
+                expect(() => lrRouter('', [123 as any])).toThrow();
+                expect(() => lrRouter('', ['invalid' as any])).toThrow();
+            });
+        });
+
+        describe('lrApp', () => {
+            test('throws when router is not a valid lrRouter instance', () => {
+                const fakeRouter = { execute: () => { } } as any;
+                expect(() => lrApp(fakeRouter, {
+                    errorResponse: lrResponse().status(500).json({}),
+                    noHandlerResponse: () => lrResponse().status(404).json({}),
+                })).toThrow();
+
+                expect(() => lrApp(null as any, {
+                    errorResponse: lrResponse().status(500).json({}),
+                    noHandlerResponse: () => lrResponse().status(404).json({}),
+                })).toThrow();
+            });
+
+            test('throws when options is not an object', () => {
+                const router = lrRouter('', []);
+                expect(() => lrApp(router, 123 as any)).toThrow();
+                expect(() => lrApp(router, 'invalid' as any)).toThrow();
+                expect(() => lrApp(router, null as any)).toThrow();
+            });
+        });
+    });
+
     test('multipart bodies drop prototype-pollution field and file names', async () => {
         const boundary = 'lfm-router-pollution-boundary';
         const server = await createTestServer(lrHandler(['POST'], '/multipart-pollution', null, req => {

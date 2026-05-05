@@ -1,7 +1,7 @@
 // © 2026 Oscar Knap - Alle rechten voorbehouden
 
 import type z from "zod";
-import type { LrResponse, lrResponseObject, httpMethod } from "./response";
+import { type LrResponse, type lrResponseObject, type httpMethod, httpMethods } from "./response";
 import type { afterParseRequest, lrRequest, matchRequest, methodsDefinitionToMethods, pathDefinitionToParams, pathDefinitionToType } from "./types";
 
 // typescript sometimes converts the Symbol('lrNext') to symbol, so we just convert it to a special object
@@ -166,8 +166,30 @@ export class LrHandler<
     callback: callback;
 
     constructor(methods: methods, path: path, validations: validations, callback: callback) {
+
+        if (methods === '*') { }
+        else if (Array.isArray(methods) && methods.every(method => httpMethods.includes(method))) { }
+        else if (typeof methods === 'string' && httpMethods.includes(methods)) { }
+        else {
+            throw new Error(`Invalid methods: ${methods}`);
+        }
+
         // to assert path is valid
         pathToParts(path);
+
+        if (validations !== null) {
+            if (typeof validations !== 'object') {
+                throw new Error(`Invalid validations: ${validations}`);
+            }
+
+            if (typeof validations.failResponse !== 'function') {
+                throw new Error(`Invalid validations.failResponse: ${validations.failResponse}`);
+            }
+        }
+
+        if (typeof callback !== 'function') {
+            throw new Error(`Invalid callback: ${callback}`);
+        }
 
         this.methods = methods;
         this.path = path;

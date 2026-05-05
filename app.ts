@@ -3,10 +3,11 @@
 import { LrResponse } from "./response";
 import { sendNodeResponse, transformNodeRequest } from "./node";
 import { lrNext } from "./handler";
+import { LrRouter } from "./router";
 
 import type { canRouterCallNext, lrRequest } from "./types";
 import type { lrResponseObject, responseCookieOptions, responseWithCookies, responseWithHeaders, httpMethod } from "./response";
-import type { generalHandlerOrRouter, LrRouter, lrRouterRequirements, lrRouterReturn } from "./router";
+import type { generalHandlerOrRouter, lrRouterRequirements, lrRouterReturn } from "./router";
 
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 
@@ -51,6 +52,10 @@ class LrApp<
     addResponseCookies: addResponseCookies;
 
     constructor(router: LrRouter<pathPrefix, handlers>, errorResponse: errorResponse, noHandlerResponse: noHandlerResponse, errorResponseFunction: errorResponseFunction, addResponseHeaders: addResponseHeaders, addResponseCookies: addResponseCookies) {
+        if (!(router instanceof LrRouter)) {
+            throw new Error(`router must be instanceof LrRouter, got typeof ${typeof router}`);
+        }
+
         this.router = router;
         this.errorResponse = errorResponse;
         this.errorResponseFunction = errorResponseFunction;
@@ -278,6 +283,10 @@ export function lrApp<
         unknown extends options['addResponseHeaders'] ? undefined : options['addResponseHeaders'],
         unknown extends options['addResponseCookies'] ? undefined : options['addResponseCookies']
     > {
+    if (typeof options !== 'object') {
+        throw new Error(`options must be an object, received typeof ${typeof options}`);
+    }
+
     return new LrApp(
         router,
         options.errorResponse,

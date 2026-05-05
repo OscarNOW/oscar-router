@@ -87,6 +87,25 @@ export class LrRouter<pathPrefix extends '' | `/${string}`, handlers extends rea
     handlers: handlers;
 
     constructor(pathPrefix: pathPrefix, handlers: handlers) {
+
+        if (typeof pathPrefix !== 'string') {
+            throw new Error(`Invalid pathPrefix: ${pathPrefix}`);
+        }
+
+        if (pathPrefix !== '' && !pathPrefix.startsWith('/')) {
+            throw new Error(`Invalid pathPrefix: ${pathPrefix}`);
+        }
+
+        if (!Array.isArray(handlers)) {
+            throw new Error(`Invalid handlers: ${handlers}`);
+        }
+
+        for (const handler of handlers) {
+            if (!(handler instanceof LrHandler) && !(handler instanceof LrRouter)) {
+                throw new Error(`Invalid handler: ${handler}`);
+            }
+        }
+
         this.pathPrefix = pathPrefix;
         this.handlers = handlers;
     }
