@@ -722,6 +722,7 @@ describe('features: direct execute APIs', () => {
 
         const response = await router.execute({
             method: 'GET',
+            isHead: false,
             path: '/direct/abc',
             params: null,
             query: Object.create(null),
@@ -753,6 +754,7 @@ describe('features: direct execute APIs', () => {
 
         const response = await app.execute({
             method: 'GET',
+            isHead: false,
             path: '/direct',
             params: null,
             query: Object.create(null),
@@ -1569,6 +1571,7 @@ describe('more coverage: route matching internals and request state', () => {
 
         const response = await app.execute({
             method: 'GET',
+            isHead: false,
             path: '/direct-context',
             params: null,
             query: { safe: 'yes' },
