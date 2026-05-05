@@ -809,6 +809,36 @@ describe('features: response helpers', () => {
         expect(response.body).toBe('abc');
     });
 
+    test('supports arrayBuffer responses with default content type', async () => {
+        const server = await createTestServer(lrHandler(['GET'], '/arraybuffer', null, () => {
+            const data = new TextEncoder().encode('hello arrayBuffer').buffer;
+            return lrResponse().arrayBuffer(data);
+        }));
+
+        const response = await httpRequest(server, {
+            path: '/arraybuffer',
+        });
+
+        expect(response.status).toBe(200);
+        expect(response.headers['content-type']).toBe('application/octet-stream');
+        expect(response.body).toBe('hello arrayBuffer');
+    });
+
+    test('supports arrayBuffer responses with binary data', async () => {
+        const server = await createTestServer(lrHandler(['GET'], '/arraybuffer-default', null, () => {
+            const data = new TextEncoder().encode('default type').buffer;
+            return lrResponse().arrayBuffer(data);
+        }));
+
+        const response = await httpRequest(server, {
+            path: '/arraybuffer-default',
+        });
+
+        expect(response.status).toBe(200);
+        expect(response.headers['content-type']).toBe('application/octet-stream');
+        expect(response.body).toBe('default type');
+    });
+
     test('supports html responses', async () => {
         const server = await createTestServer(lrHandler(['GET'], '/html', null, () => {
             return lrResponse().html('<h1>Hello</h1>');
