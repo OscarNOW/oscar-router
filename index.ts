@@ -3,7 +3,7 @@
 export type { requestData, lrRequest, } from "./types";
 
 export type { responseCookieOptions, httpMethod, LrResponse, lrResponseObject } from "./response";
-export { defaultResponseCookieOptions, lrResponse } from "./response";
+export { defaultResponseCookieOptions, lrResponse, httpMethods } from "./response";
 
 export type { } from "./handler";
 export { lrNext, lrHandler } from "./handler";
