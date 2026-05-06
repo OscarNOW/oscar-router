@@ -132,7 +132,7 @@ export type lrHandlerCallback<
         => (lrHandlerReturn | Promise<lrHandlerReturn>);
 
 export type generalValidations<
-    methods extends '*' | httpMethod | httpMethod[],
+    methods extends '*' | httpMethod | readonly httpMethod[],
     path extends string,
 > = null | {
     body?: z.ZodType;
@@ -149,7 +149,7 @@ export type generalValidations<
 };
 
 export class LrHandler<
-    methods extends '*' | httpMethod | httpMethod[],
+    methods extends '*' | httpMethod | readonly httpMethod[],
     path extends string,
     validations extends generalValidations<methods, path>,
     callback extends lrHandlerCallback<
@@ -308,7 +308,7 @@ export class LrHandler<
 };
 
 export function lrHandler<
-    methods extends '*' | httpMethod | httpMethod[],
+    methods extends '*' | httpMethod | readonly httpMethod[],
     path extends `/${string}`,
     validations extends generalValidations<methods, path>,
     callback extends lrHandlerCallback<
