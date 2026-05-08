@@ -114,7 +114,10 @@ export function match<
         const reqPart = reqPathSplit[i];
 
         if (pathPart.type === 'literal' && pathPart.value !== reqPart) return false as matchRequest<methods, path, testMethod, testPath>;
-        if (pathPart.type === 'param') continue;
+        if (pathPart.type === 'param') {
+            if (reqPart === '') return false as matchRequest<methods, path, testMethod, testPath>;
+            continue;
+        }
         if (pathPart.type === 'rest') {
             hasRest = true;
             break;
