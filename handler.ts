@@ -203,6 +203,19 @@ export type generalValidations<
     ) => LrResponse<lrResponseObject> | Promise<LrResponse<lrResponseObject>>;
 };
 
+export type lrGeneralLrHandler = LrHandler<
+    '*' | httpMethod | readonly httpMethod[],
+    string,
+    generalValidations<'*' | httpMethod | readonly httpMethod[], string>,
+    lrHandlerCallback<
+        httpMethod,
+        `/${string}`,
+        Record<string, any>,
+        Record<string, any>,
+        unknown
+    >
+>;
+
 export class LrHandler<
     methods extends '*' | httpMethod | readonly httpMethod[],
     path extends string,
