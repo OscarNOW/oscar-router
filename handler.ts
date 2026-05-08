@@ -103,7 +103,8 @@ export function match<
 
     const pathParts = pathToParts(path);
 
-    if (reqPathSplit.length < pathParts.length) return false as matchRequest<methods, path, testMethod, testPath>;
+    // +1 because /abc should match /abc/*
+    if ((reqPathSplit.length + 1) < pathParts.length) return false as matchRequest<methods, path, testMethod, testPath>;
 
     let hasRest = false;
 
@@ -113,8 +114,12 @@ export function match<
         const pathPart = pathParts[i]!;
         const reqPart = reqPathSplit[i];
 
-        if (pathPart.type === 'literal' && pathPart.value !== reqPart) return false as matchRequest<methods, path, testMethod, testPath>;
+        if (pathPart.type === 'literal') {
+            if (reqPart === undefined) return false as matchRequest<methods, path, testMethod, testPath>;
+            if (pathPart.value !== reqPart) return false as matchRequest<methods, path, testMethod, testPath>;
+        }
         if (pathPart.type === 'param') {
+            if (reqPart === undefined) return false as matchRequest<methods, path, testMethod, testPath>;
             if (reqPart === '') return false as matchRequest<methods, path, testMethod, testPath>;
             continue;
         }
@@ -150,7 +155,15 @@ function parseParams(pathPrefix: string, path: string, reqPath: string): Record<
 
     const parts = pathToParts(path);
 
-    const restPathParts = restPath.slice(1).split('/');
+    let restPathParts = restPath.slice(1).split('/');
+
+    // because /abc should match /abc/*
+    if (
+        parts[parts.length - 1]?.type === 'rest' &&
+        restPathParts.length + 1 === parts.length
+    ) {
+        restPathParts.push('');
+    }
 
     if (restPathParts.length < parts.length) {
         throw new Error(`parseParams has restPathParts ${restPathParts} that are less than parts ${parts}`);
