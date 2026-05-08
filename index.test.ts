@@ -708,6 +708,23 @@ describe('features: nested routers', () => {
         expect(response.status).toBe(404);
         expect(JSON.parse(response.body)).toEqual({ ok: false });
     });
+
+    test('does not match a nested param route when the router prefix consumes the full request path', async () => {
+        const server = await createRouterServer(lrRouter('', [
+            lrRouter('/foo', [
+                lrHandler(['GET'], '/:id', null, () => {
+                    return lrResponse().json({ reached: true } as const);
+                }),
+            ]),
+        ]));
+
+        const response = await httpRequest(server, {
+            path: '/foo',
+        });
+
+        expect(response.status).toBe(404);
+        expect(JSON.parse(response.body)).toEqual({ ok: false });
+    });
 });
 
 describe('features: direct execute APIs', () => {
