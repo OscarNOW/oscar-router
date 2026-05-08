@@ -5,11 +5,12 @@
   "private": true,
   "scripts": {
     "dev": "bun --watch idea.ts",
-    "test": "bun test"
+    "t": "bun test && tsc --noEmit"
   },
   "devDependencies": {
     "@types/busboy": "^1.5.4",
     "@types/node": "^25.6.0",
+    "expect-type": "^1.3.0",
     "zod": "^4.4.2"
   },
   "peerDependencies": {
