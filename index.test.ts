@@ -725,6 +725,143 @@ describe('features: nested routers', () => {
         expect(response.status).toBe(404);
         expect(JSON.parse(response.body)).toEqual({ ok: false });
     });
+
+    test('does not match a nested param route with deep multi-segment prefix that consumes the full path', async () => {
+        const server = await createRouterServer(lrRouter('', [
+            lrRouter('/foo/bar', [
+                lrHandler(['GET'], '/:id', null, () => {
+                    return lrResponse().json({ reached: true } as const);
+                }),
+            ]),
+        ]));
+
+        const response = await httpRequest(server, {
+            path: '/foo/bar',
+        });
+
+        expect(response.status).toBe(404);
+        expect(JSON.parse(response.body)).toEqual({ ok: false });
+    });
+
+    test('does not match a top-level param route when the request path is the root', async () => {
+        const server = await createRouterServer(lrRouter('', [
+            lrHandler(['GET'], '/:id', null, () => {
+                return lrResponse().json({ reached: true } as const);
+            }),
+        ]));
+
+        const response = await httpRequest(server, {
+            path: '/',
+        });
+
+        expect(response.status).toBe(404);
+        expect(JSON.parse(response.body)).toEqual({ ok: false });
+    });
+
+    test('does not match a deeply nested param route with three levels of nesting consuming the full path', async () => {
+        const server = await createRouterServer(lrRouter('', [
+            lrRouter('/a', [
+                lrRouter('/b', [
+                    lrHandler(['GET'], '/:id', null, () => {
+                        return lrResponse().json({ reached: true } as const);
+                    }),
+                ]),
+            ]),
+        ]));
+
+        const response = await httpRequest(server, {
+            path: '/a/b',
+        });
+
+        expect(response.status).toBe(404);
+        expect(JSON.parse(response.body)).toEqual({ ok: false });
+    });
+
+    test('does not match a param route when only a literal segment is present after the prefix', async () => {
+        const server = await createRouterServer(lrRouter('', [
+            lrRouter('/foo', [
+                lrHandler(['GET'], '/:id/extra', null, () => {
+                    return lrResponse().json({ reached: true } as const);
+                }),
+            ]),
+        ]));
+
+        const response = await httpRequest(server, {
+            path: '/foo',
+        });
+
+        expect(response.status).toBe(404);
+        expect(JSON.parse(response.body)).toEqual({ ok: false });
+    });
+
+    test('does not match a param route in a non-root router when the prefix consumes the full path', async () => {
+        const server = await createRouterServer(lrRouter('/api', [
+            lrRouter('/foo', [
+                lrHandler(['GET'], '/:id', null, () => {
+                    return lrResponse().json({ reached: true } as const);
+                }),
+            ]),
+        ]));
+
+        const response = await httpRequest(server, {
+            path: '/api/foo',
+        });
+
+        expect(response.status).toBe(404);
+        expect(JSON.parse(response.body)).toEqual({ ok: false });
+    });
+
+    test('matches a nested param route correctly when the param value is present', async () => {
+        const server = await createRouterServer(lrRouter('', [
+            lrRouter('/foo', [
+                lrHandler(['GET'], '/:id', null, req => {
+                    const params = req.params as Record<string, string>;
+                    return lrResponse().json({ id: params.id } as const);
+                }),
+            ]),
+        ]));
+
+        const response = await httpRequest(server, {
+            path: '/foo/bar',
+        });
+
+        expect(response.status).toBe(200);
+        expect(JSON.parse(response.body)).toEqual({ id: 'bar' });
+    });
+
+    test('matches a nested param route correctly with deep multi-segment prefix', async () => {
+        const server = await createRouterServer(lrRouter('', [
+            lrRouter('/foo/bar', [
+                lrHandler(['GET'], '/:id', null, req => {
+                    const params = req.params as Record<string, string>;
+                    return lrResponse().json({ id: params.id } as const);
+                }),
+            ]),
+        ]));
+
+        const response = await httpRequest(server, {
+            path: '/foo/bar/baz',
+        });
+
+        expect(response.status).toBe(200);
+        expect(JSON.parse(response.body)).toEqual({ id: 'baz' });
+    });
+
+    test('matches a nested param route correctly at the top level', async () => {
+        const server = await createRouterServer(lrRouter('', [
+            lrHandler(['GET'], '/:id', null, req => {
+                const params = req.params as Record<string, string>;
+                return lrResponse().json({ id: params.id } as const);
+            }),
+        ]));
+
+        const response = await httpRequest(server, {
+            path: '/hello',
+        });
+
+        expect(response.status).toBe(200);
+        expect(JSON.parse(response.body)).toEqual({ id: 'hello' });
+    });
 });
 
 describe('features: direct execute APIs', () => {
