@@ -4,6 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
+    "dev": "bun --watch idea.ts",
     "test": "bun test"
   },
   "devDependencies": {
