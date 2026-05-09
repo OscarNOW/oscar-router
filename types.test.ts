@@ -156,8 +156,8 @@ const deepEdgeRouter = lrRouter("", [
             lrHandler("GET", "/:id", null, () => {
                 return lrResponse().json({ reached: true } as const);
             }),
-        ]),
-    ]),
+        ] as const),
+    ] as const),
 ] as const);
 
 test("deep nested prefix /a/b consumes full path, no match", () => {
