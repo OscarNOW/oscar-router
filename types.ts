@@ -76,6 +76,10 @@ type matchPaths<definition extends string, test extends `/${string}`> =
                 test extends `/${infer testPart}` ? partMatchPaths<definitionPart, testPart>
                 : never
             ) :
+            definitionRest extends '' ? (
+                test extends `/${infer testPart}` ? partMatchPaths<definitionPart, testPart>
+                : never
+            ) :
             // definition has more than 1 part, but test only has 1
             false
         )
@@ -84,8 +88,10 @@ type matchPaths<definition extends string, test extends `/${string}`> =
         ? (
             definitionPart extends '*' ? true
             : (
-                test extends `/${string}/${string}` ? false // definition has 1 part, but test has more
-                : (
+                test extends `/${infer testPart}/${infer testRest}` ? (
+                    testRest extends '' ? partMatchPaths<definitionPart, testPart>
+                    : false // definition has 1 part, but test has more
+                ) : (
                     test extends `/${infer testPart}` ? partMatchPaths<definitionPart, testPart> : never
                 )
             )
