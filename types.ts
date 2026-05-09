@@ -96,8 +96,12 @@ type matchPaths<definition extends string, test extends `/${string}`> =
 type matchMethods<definitionMethods extends '*' | httpMethod | readonly httpMethod[], testMethod extends httpMethod> =
     definitionMethods extends '*' ? true
     : definitionMethods extends testMethod ? true
-    : testMethod extends definitionMethods[number] ? true
-    : false;
+    : (
+        definitionMethods extends readonly httpMethod[]
+        ? testMethod extends definitionMethods[number] ? true
+        : false
+        : false
+    );
 
 export type matchRequest<
     methods extends '*' | httpMethod | readonly httpMethod[],
