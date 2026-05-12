@@ -11,6 +11,7 @@ import {
     type lrRouterReturn, type lrAppReturn,
     type lrRouterRequirements,
 } from ".";
+import type { file } from "./node";
 
 // ─── Basic type tests ───
 
@@ -25,10 +26,11 @@ test("lrRequest shape with method and path", () => {
 });
 
 test("lrHandlerRequest shape with params, query and body", () => {
-    type Req = lrHandlerRequest<"POST", "/foo", { id: string }, { q: string }, { name: string }>;
+    type Req = lrHandlerRequest<"POST", "/foo", { id: string }, { q: string }, { f: file }, { name: string }>;
     expectTypeOf<Req>().toMatchTypeOf<{
         method: "POST";
         path: "/foo";
+        files: { f: file };
         params: { id: string };
         query: { q: string };
         body: { name: string };
@@ -571,7 +573,7 @@ test("lrRequest includes files property", () => {
 });
 
 test("lrHandlerRequest includes files property", () => {
-    type Req = lrHandlerRequest<"POST", "/upload", {}, {}, {}>;
+    type Req = lrHandlerRequest<"POST", "/upload", {}, {}, {}, {}>;
     expectTypeOf<Req>().toExtend<{ files: Record<string, { name: string; mimeType: string; buffer: Buffer }> }>();
 });
 
