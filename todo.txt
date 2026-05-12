@@ -1,0 +1,17 @@
+lfm-router
+req.files	string -> file
+files in validations
+  lrFileSchema exporten naar user
+  zorgen dat transform werkt
+formdata
+  req.body
+  niet aanwezig -> undefined
+  leeg -> lege string
+
+back
+inputSchema -> bodySchema
+filesSchema
+.trim().min(1) gebruiken
+empty string
+  null allowed: transform -> null
+  null not allowed: refine -> false

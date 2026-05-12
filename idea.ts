@@ -1,6 +1,6 @@
 // © 2026 Oscar Knap - Alle rechten voorbehouden
 
-import { lrHandler, lrApp, lrRouter, lrNext, lrResponse } from ".";
+import { lrHandler, lrApp, lrRouter, lrNext, lrResponse, lrFileSchema } from ".";
 import type { lrRouterReturn, lrRouterRequirements, lrAppReturn, lrAppRequirements, LrResponse } from ".";
 import { z } from 'zod';
 
@@ -14,6 +14,10 @@ const handler1 = lrHandler('*', '/foo/*', {
     }),
     params: z.object({
         '*': z.string().transform(a => parseInt(a)),
+    }),
+    files: z.object({
+        hi: lrFileSchema,
+        hi2: lrFileSchema.transform(({ name, ...rest }) => ({ name: 'hi2', ...rest }))
     }),
     failResponse: async (req, { bodyError, queryError, paramsError }) => {
         req.method;
