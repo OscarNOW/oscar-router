@@ -20,6 +20,8 @@ export const lrFileSchema = z.object({
     buffer: z.instanceof(Buffer),
 });
 
+export type file = z.infer<typeof lrFileSchema>;
+
 type generalRequest = lrRequest<httpMethod, `/${string}`>;
 
 const COOKIE_NAME_REGEX = /^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$/;

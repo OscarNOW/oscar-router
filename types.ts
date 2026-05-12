@@ -4,6 +4,7 @@ import type z from "zod";
 import type { LrHandler, lrNext } from "./handler";
 import type { LrRouter } from "./router";
 import type { httpMethod } from "./response";
+import type { file } from "./node";
 
 export interface requestData {
     // user can augment this
@@ -20,6 +21,7 @@ export type lrRequest<
     params: null; // null because there is no path definition
     query: Record<string, string>; // not generic, because this is before zod parsing
     body: unknown; // not generic, because this is before zod parsing
+    files: Record<string, file>;
     data: requestData;
     ip: string;
     headers: Record<string, string>;
@@ -31,6 +33,7 @@ export type lrHandlerRequest<
     path extends `/${string}`,
     params extends Record<string, any>, // any, because it can be transformed with zod
     query extends Record<string, any>, // any, because it can be transformed with zod
+    files extends Record<string, any>, // any, because it can be transformed with zod
     body
 > = {
     method: method;
@@ -40,6 +43,7 @@ export type lrHandlerRequest<
     params: params;
     query: query;
     body: body;
+    files: files;
     data: requestData;
     ip: string;
     headers: Record<string, string>;
