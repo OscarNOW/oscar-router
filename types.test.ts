@@ -562,3 +562,32 @@ test("router with empty handlers returns lrNext for any request", () => {
     type _isLrNext = Ret extends typeof lrNext ? true : false;
     const _v: _isLrNext = true;
 });
+
+// ─── Files on request type tests ───
+
+test("lrRequest includes files property", () => {
+    type Req = lrRequest<"GET", "/test">;
+    expectTypeOf<Req>().toExtend<{ files: Record<string, { name: string; mimeType: string; buffer: Buffer }> }>();
+});
+
+test("lrHandlerRequest includes files property", () => {
+    type Req = lrHandlerRequest<"POST", "/upload", {}, {}, {}>;
+    expectTypeOf<Req>().toExtend<{ files: Record<string, { name: string; mimeType: string; buffer: Buffer }> }>();
+});
+
+test("handler with files validation types req.files", () => {
+    const h = lrHandler("POST", "/upload", {
+        files: z.object({
+            file: z.object({ name: z.string(), mimeType: z.string(), buffer: z.instanceof(Buffer) }),
+        }),
+        failResponse: () => lrResponse().status(400).text("fail"),
+    }, req => {
+        expectTypeOf<typeof req.files>().toExtend<{ file: { name: string } }>();
+        return lrResponse().json({ ok: true } as const);
+    });
+});
+
+test("lrFileSchema is exported from library", () => {
+    type Module = typeof import(".");
+    expectTypeOf<Module>().toExtend<{ lrFileSchema: z.ZodType }>();
+});

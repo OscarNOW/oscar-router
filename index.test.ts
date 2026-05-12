@@ -310,20 +310,11 @@ describe('features: normal request handling', () => {
     test('parses multipart fields and files', async () => {
         const boundary = 'lfm-router-test-boundary';
         const server = await createTestServer(lrHandler(['POST'], '/multipart', null, req => {
-            const body = req.body as {
-                fields: Record<string, string>;
-                files: Record<string, {
-                    name: string;
-                    mimeType: string;
-                    buffer: Buffer;
-                }[]>;
-            };
-
             return lrResponse().json({
-                title: body.fields.title,
-                fileName: body.files.upload?.[0]?.name,
-                fileType: body.files.upload?.[0]?.mimeType,
-                fileText: body.files.upload?.[0]?.buffer.toString('utf8'),
+                title: (req.body as any).title,
+                fileName: (req.files as any).upload.name,
+                fileType: (req.files as any).upload.mimeType,
+                fileText: (req.files as any).upload.buffer.toString('utf8'),
             } as const);
         }));
 
@@ -346,6 +337,29 @@ describe('features: normal request handling', () => {
             fileType: 'text/plain',
             fileText: 'Ajax 2-1 PSV',
         });
+    });
+
+    test('parses multipart fields and keeps empty strings as empty strings', async () => {
+        const boundary = 'lfm-router-test-boundary';
+        const server = await createTestServer(lrHandler(['POST'], '/multipart-empty', null, req => {
+            return lrResponse().json({
+                empty: (req.body as any).empty,
+            } as const);
+        }));
+
+        const response = await httpRequest(server, {
+            method: 'POST',
+            path: '/multipart-empty',
+            headers: {
+                'Content-Type': `multipart/form-data; boundary=${boundary}`,
+            },
+            body: multipartBody(boundary, [
+                { name: 'empty', value: '' },
+            ]),
+        });
+
+        expect(response.status).toBe(200);
+        expect(JSON.parse(response.body)).toEqual({ empty: '' });
     });
 
     test('uses null for unsupported content types', async () => {
@@ -619,6 +633,43 @@ describe('features: validations', () => {
             id: 42,
             page: 3,
         });
+    });
+
+    test('validates files with files schema and transform', async () => {
+        const boundary = 'lfm-router-test-boundary';
+        const localFileSchema = z.object({
+            name: z.string(),
+            mimeType: z.string(),
+            buffer: z.instanceof(Buffer),
+        });
+
+        const server = await createTestServer(lrHandler(['POST'], '/validate-files', {
+            files: z.object({
+                upload: localFileSchema.transform(file => ({
+                    ...file,
+                    name: file.name.toUpperCase(),
+                })),
+            }),
+            failResponse: () => lrResponse().status(400).json({ ok: false } as const),
+        } as any, req => {
+            return lrResponse().json({
+                fileName: (req.files as any).upload.name,
+            } as const);
+        }));
+
+        const response = await httpRequest(server, {
+            method: 'POST',
+            path: '/validate-files',
+            headers: {
+                'Content-Type': `multipart/form-data; boundary=${boundary}`,
+            },
+            body: multipartBody(boundary, [
+                { name: 'upload', filename: 'test.txt', contentType: 'text/plain', value: 'content' },
+            ]),
+        });
+
+        expect(response.status).toBe(200);
+        expect(JSON.parse(response.body)).toEqual({ fileName: 'TEST.TXT' });
     });
 });
 
