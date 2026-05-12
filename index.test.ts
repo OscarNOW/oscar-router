@@ -1798,18 +1798,13 @@ describe('security: body parsing', () => {
     test('multipart bodies drop prototype-pollution field and file names', async () => {
         const boundary = 'lfm-router-pollution-boundary';
         const server = await createTestServer(lrHandler(['POST'], '/multipart-pollution', null, req => {
-            const body = req.body as {
-                fields: Record<string, string>;
-                files: Record<string, unknown[]>;
-            };
-
             return lrResponse().json({
-                safeField: body.fields.safe,
-                protoField: body.fields.__proto__ ?? null,
-                constructorField: body.fields.constructor ?? null,
-                safeFiles: body.files.upload?.length ?? 0,
-                protoFiles: body.files.__proto__ ?? null,
-                constructorFiles: body.files.constructor ?? null,
+                safeField: (req.body as any).safe,
+                protoField: (req.body as any).__proto__ ?? null,
+                constructorField: (req.body as any).constructor ?? null,
+                safeFile: (req as any).files?.upload?.name ?? null,
+                protoFile: (req as any).files?.__proto__ ?? null,
+                constructorFile: (req as any).files?.constructor ?? null,
             } as const);
         }));
 
@@ -1834,10 +1829,52 @@ describe('security: body parsing', () => {
             safeField: 'yes',
             protoField: null,
             constructorField: null,
-            safeFiles: 1,
-            protoFiles: null,
-            constructorFiles: null,
+            safeFile: 'safe.txt',
+            protoFile: null,
+            constructorFile: null,
         });
+    });
+
+    test('files object on request drops prototype-pollution keys and uses null prototype', async () => {
+        const boundary = 'lfm-router-files-pollution-boundary';
+        let capturedFiles: any = undefined;
+
+        const server = await createTestServer(lrHandler(['POST'], '/multipart-files-pp', null, req => {
+            capturedFiles = (req as any).files;
+
+            return lrResponse().json({
+                uploadName: capturedFiles?.upload?.name ?? null,
+                uploadType: capturedFiles?.upload?.mimeType ?? null,
+                protoFile: capturedFiles?.__proto__ ?? null,
+                constructorFile: capturedFiles?.constructor ?? null,
+                prototypeFile: capturedFiles?.prototype ?? null,
+            } as const);
+        }));
+
+        const response = await httpRequest(server, {
+            method: 'POST',
+            path: '/multipart-files-pp',
+            headers: {
+                'Content-Type': `multipart/form-data; boundary=${boundary}`,
+            },
+            body: multipartBody(boundary, [
+                { name: 'upload', filename: 'photo.png', contentType: 'image/png', value: 'fake-png-data' },
+                { name: '__proto__', filename: 'bad.txt', contentType: 'text/plain', value: 'polluted' },
+                { name: 'constructor', filename: 'bad.txt', contentType: 'text/plain', value: 'bad' },
+                { name: 'prototype', filename: 'bad.txt', contentType: 'text/plain', value: 'bad' },
+            ]),
+        });
+
+        expect(response.status).toBe(200);
+        expect(JSON.parse(response.body)).toEqual({
+            uploadName: 'photo.png',
+            uploadType: 'image/png',
+            protoFile: null,
+            constructorFile: null,
+            prototypeFile: null,
+        });
+        expect(capturedFiles).toBeDefined();
+        expect(Object.getPrototypeOf(capturedFiles)).toBeNull();
     });
 
     test('urlencoded bodies parse into a null-prototype object and drop inherited pollution behavior', async () => {
