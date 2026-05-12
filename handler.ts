@@ -217,6 +217,7 @@ export type generalValidations<
         req: lrRequest<methodsDefinitionToMethods<methods>, pathDefinitionToType<path>>,
         errors: {
             bodyError: z.ZodError | null;
+            filesError: z.ZodError | null;
             queryError: z.ZodError | null;
             paramsError: z.ZodError | null;
         }
@@ -303,6 +304,7 @@ export class LrHandler<
 
         if (this.validations) {
             let bodyError = null;
+            let filesError = null;
             let queryError = null;
             let paramsError = null;
 
@@ -313,6 +315,16 @@ export class LrHandler<
                     bodyError = bodyResult.error;
                 } else {
                     newReq.body = bodyResult.data;
+                }
+            }
+
+            if (this.validations.files) {
+                const filesResult = await this.validations.files.safeParseAsync(newReq.files);
+
+                if (!filesResult.success) {
+                    filesError = filesResult.error;
+                } else {
+                    newReq.files = filesResult.data;
                 }
             }
 
@@ -336,8 +348,8 @@ export class LrHandler<
                 }
             }
 
-            if (bodyError || queryError || paramsError) {
-                const response = await this.validations.failResponse(req, { bodyError, queryError, paramsError });
+            if (bodyError || filesError || queryError || paramsError) {
+                const response = await this.validations.failResponse(req, { bodyError, filesError, queryError, paramsError });
 
                 return response as any;
             }
