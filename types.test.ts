@@ -21,13 +21,13 @@ test("httpMethod is a union of standard HTTP methods", () => {
 
 test("lrRequest shape with method and path", () => {
     type Req = lrRequest<"GET", "/test">;
-    expectTypeOf<Req>().toMatchTypeOf<{ method: "GET"; path: "/test" }>();
-    expectTypeOf<Req>().not.toMatchTypeOf<{ method: "POST" }>();
+    expectTypeOf<Req>().toExtend<{ method: "GET"; path: "/test" }>();
+    expectTypeOf<Req>().not.toExtend<{ method: "POST" }>();
 });
 
 test("lrHandlerRequest shape with params, query and body", () => {
     type Req = lrHandlerRequest<"POST", "/foo", { id: string }, { q: string }, { f: file }, { name: string }>;
-    expectTypeOf<Req>().toMatchTypeOf<{
+    expectTypeOf<Req>().toExtend<{
         method: "POST";
         path: "/foo";
         files: { f: file };
