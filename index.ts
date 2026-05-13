@@ -8,7 +8,7 @@ export { lrFileSchema } from "./node";
 export type { responseCookieOptions, httpMethod, LrResponse, lrResponseObject } from "./response";
 export { defaultResponseCookieOptions, lrResponse, httpMethods } from "./response";
 
-export type { lrGeneralLrHandler } from "./handler";
+export type { lrGeneralLrHandler, lrValidationErrors } from "./handler";
 export { lrNext, lrHandler, match } from "./handler";
 
 export type { lrRouterReturn, lrRouterRequirements, lrGeneralRouterMatch, lrGeneralHandlerMatch, lrGeneralRouterMatchReturn } from "./router";

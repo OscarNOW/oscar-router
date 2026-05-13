@@ -214,14 +214,16 @@ export type generalValidations<
     params?: z.ZodType<unknown, pathDefinitionToParams<path>>;
     files?: z.ZodType<unknown, Record<string, file>>;
     failResponse: (
-        errors: {
-            bodyError: z.ZodError | null;
-            filesError: z.ZodError | null;
-            queryError: z.ZodError | null;
-            paramsError: z.ZodError | null;
-        },
+        errors: lrValidationErrors,
         req: lrRequest<methodsDefinitionToMethods<methods>, pathDefinitionToType<path>>
     ) => LrResponse<lrResponseObject> | Promise<LrResponse<lrResponseObject>>;
+};
+
+export type lrValidationErrors = {
+    bodyError: z.ZodError | null;
+    filesError: z.ZodError | null;
+    queryError: z.ZodError | null;
+    paramsError: z.ZodError | null;
 };
 
 export type lrGeneralLrHandler = LrHandler<
