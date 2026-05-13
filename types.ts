@@ -56,12 +56,12 @@ export type simplify<T> =
     : T;
 
 export type simplifyRequirements<T> =
-    T extends object
-    ? (
-        T extends Buffer ? T
-        : { [K in keyof T]: simplifyRequirements<T[K]> }
-    )
-    : T;
+    T extends file ? unknown
+    : (
+        T extends object
+        ? { [K in keyof T]: simplifyRequirements<T[K]> }
+        : T
+    );
 
 type partMatchPaths<definitionPart extends string, testPart extends string> =
     definitionPart extends `:${string}` ? (
