@@ -5,12 +5,13 @@ import { expectTypeOf } from "expect-type";
 import { z } from "zod";
 import {
     lrRouter, lrHandler, lrResponse, lrNext,
-    lrApp,
+    lrApp, lrFileSchema,
     type httpMethod, type lrRequest, type LrResponse,
     type lrHandlerRequest,
     type lrRouterReturn, type lrAppReturn,
     type lrRouterRequirements,
 } from ".";
+import type { lrAppRequirements } from "./app";
 import type { file } from "./node";
 
 // ─── Basic type tests ───
@@ -428,6 +429,40 @@ test("lrRouterRequirements with body validation requires zod input", () => {
     type Reqs = lrRouterRequirements<typeof router, "POST", "/validate">;
     type _hasName = Reqs extends { body: { name: string } } ? true : false;
     const _v: _hasName = true;
+    type _filesOmitted = Reqs extends { files: unknown } ? true : false;
+    const _filesCheck: _filesOmitted = false;
+});
+
+test("lrRouterRequirements with files validation requires proper files type", () => {
+    const router = lrRouter("", [
+        lrHandler("POST", "/upload", {
+            files: z.object({
+                file: z.object({ name: z.string(), mimeType: z.string(), buffer: z.instanceof(Buffer) }),
+            }),
+            failResponse: () => lrResponse().status(400).text("fail"),
+        }, () => lrResponse().json({ ok: true } as const)),
+    ] as const);
+    type Reqs = lrRouterRequirements<typeof router, "POST", "/upload">;
+    type _hasFiles = Reqs extends { files: { file: unknown } } ? true : false;
+    const _v: _hasFiles = true;
+});
+
+test("lrAppRequirements with files validation requires proper files type", () => {
+    const router = lrRouter("", [
+        lrHandler("POST", "/app-upload", {
+            files: z.object({
+                avatar: lrFileSchema,
+            }),
+            failResponse: () => lrResponse().status(400).text("fail"),
+        }, () => lrResponse().json({ ok: true } as const)),
+    ] as const);
+    const app = lrApp(router, {
+        errorResponse: lrResponse().status(500).json({ error: true } as const),
+        noHandlerResponse: () => lrResponse().status(404).json({ not: "found" } as const),
+    });
+    type AppReqs = lrAppRequirements<typeof app, "POST", "/app-upload">;
+    type _hasFiles = AppReqs extends { files: { avatar: unknown } } ? true : false;
+    const _v: _hasFiles = true;
 });
 
 // ─── lrApp with response hooks type tests ───
