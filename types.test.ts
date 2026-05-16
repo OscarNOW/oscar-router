@@ -395,6 +395,61 @@ test("top-level router /shows with root handler matches path /shows", () => {
     const _v: _isResponse = true;
 });
 
+const tripleCookiesHandler = lrHandler("GET", "/", {
+    query: z.object({ session: z.string() }),
+    failResponse: () => lrResponse().status(400).text("fail"),
+}, () => {
+    return lrResponse().json({ cookies: true } as const);
+});
+
+const tripleCookiesRouter = lrRouter("/cookies", [
+    tripleCookiesHandler,
+] as const);
+
+const tripleCookiesMiddleRouter = lrRouter("", [
+    tripleCookiesRouter,
+] as const);
+
+const tripleCookiesRootRouter = lrRouter("", [
+    tripleCookiesMiddleRouter,
+] as const);
+
+test("router -> router -> router /cookies -> handler GET / return type matches /cookies", () => {
+    type Ret = lrRouterReturn<typeof tripleCookiesRootRouter, "GET", "/cookies">;
+    type _isResponse = Ret extends LrResponse<any> ? true : false;
+    const _a: _isResponse = true;
+    type _isLrNext = typeof lrNext extends Ret ? true : false;
+    const _b: _isLrNext = false;
+});
+
+test("router -> router -> router /cookies -> handler GET / requirements match /cookies", () => {
+    type Reqs = lrRouterRequirements<typeof tripleCookiesRootRouter, "GET", "/cookies">;
+    type _hasSessionQuery = Reqs extends { query: { session: string } } ? true : false;
+    const _v: _hasSessionQuery = true;
+});
+
+test("router -> router -> router /cookies -> handler GET / match type nests routers", () => {
+    const match = tripleCookiesRootRouter.match("GET", "/cookies");
+    expectTypeOf<typeof match.matches>().toEqualTypeOf<[
+        {
+            type: "router";
+            router: typeof tripleCookiesMiddleRouter;
+            matches: [
+                {
+                    type: "router";
+                    router: typeof tripleCookiesRouter;
+                    matches: [
+                        {
+                            type: "handler";
+                            handler: typeof tripleCookiesHandler;
+                        }
+                    ];
+                }
+            ];
+        }
+    ]>();
+});
+
 test("top-level router with /api prefix does not match /status without prefix", () => {
     type Ret = lrRouterReturn<typeof prefixedRouter, "GET", "/status">;
     type _isLrNext = Ret extends typeof lrNext ? true : false;

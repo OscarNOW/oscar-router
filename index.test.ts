@@ -758,6 +758,38 @@ describe('features: nested routers', () => {
         expect(JSON.parse(response.body)).toEqual({ ok: true });
     });
 
+    test('matches router -> router -> router /cookies -> handler GET /', () => {
+        const handler = lrHandler(['GET'], '/', null, () => {
+            return lrResponse().json({ cookies: true } as const);
+        });
+
+        const cookiesRouter = lrRouter('/cookies', [handler]);
+        const middleRouter = lrRouter('', [cookiesRouter]);
+        const router = lrRouter('', [middleRouter]);
+
+        const match = router.match('GET', '/cookies') as any;
+
+        expect(match.matches).toHaveLength(1);
+        expect(match.matches[0]?.type).toBe('router');
+
+        const firstRouterMatch = match.matches[0];
+        expect(firstRouterMatch?.type).toBe('router');
+        if (firstRouterMatch?.type !== 'router') throw new Error('expected first router match');
+        expect(firstRouterMatch.router).toBe(middleRouter);
+        expect(firstRouterMatch.matches).toHaveLength(1);
+
+        const secondRouterMatch = firstRouterMatch.matches[0];
+        expect(secondRouterMatch?.type).toBe('router');
+        if (secondRouterMatch?.type !== 'router') throw new Error('expected second router match');
+        expect(secondRouterMatch.router).toBe(cookiesRouter);
+        expect(secondRouterMatch.matches).toHaveLength(1);
+
+        const handlerMatch = secondRouterMatch.matches[0];
+        expect(handlerMatch?.type).toBe('handler');
+        if (handlerMatch?.type !== 'handler') throw new Error('expected handler match');
+        expect(handlerMatch.handler).toBe(handler);
+    });
+
     test('does not confuse router prefix boundaries', async () => {
         const server = await createRouterServer(lrRouter('', [
             lrRouter('/api', [
