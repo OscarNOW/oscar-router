@@ -401,9 +401,7 @@ function cookiesToHeader(cookies: lrResponseObject['cookies']): string[] {
     });
 }
 
-export function sendNodeResponse(nodeReq: IncomingMessage, nodeRes: ServerResponse, responseClass: LrResponse<lrResponseObject>): Promise<void> {
-    const response = responseClass.response;
-
+export function sendNodeResponse(nodeReq: IncomingMessage, nodeRes: ServerResponse, response: lrResponseObject): Promise<void> {
     let headers: Record<string, string | string[]> = Object.create(null);
 
     if (Object.keys(response.cookies).length > 0) {

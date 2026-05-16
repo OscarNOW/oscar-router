@@ -111,23 +111,23 @@ class LrApp<
                 response = response.cookies(cookies) as LrResponse<lrResponseObject>;
             }
 
-            return response as lrAppReturn<this, testMethod, testPath>;
+            return response.response as lrAppReturn<this, testMethod, testPath>;
 
         } catch (e) {
             console.warn('[lfm-router] Unhandled error in execute', e);
-            return this.errorResponse as lrAppReturn<this, testMethod, testPath>;
+            return this.errorResponse.response as lrAppReturn<this, testMethod, testPath>;
         }
     }
 
     async nodeExecute(nodeReq: IncomingMessage, nodeRes: ServerResponse): Promise<void> {
-        let response: LrResponse<lrResponseObject>;
+        let response: lrResponseObject;
         try {
             const req = await transformNodeRequest(nodeReq);
 
             response = await this.execute(req);
         } catch (e) {
             console.warn('[lfm-router] Unhandled error in nodeExecute', e);
-            response = this.errorResponse;
+            response = this.errorResponse.response;
         }
 
         try {
@@ -137,7 +137,7 @@ class LrApp<
 
             if (!nodeRes.headersSent) {
                 try {
-                    await sendNodeResponse(nodeReq, nodeRes, this.errorResponse);
+                    await sendNodeResponse(nodeReq, nodeRes, this.errorResponse.response);
                 } catch (fallbackError) {
                     console.warn('[lfm-router] Unhandled error while sending fallback errorResponse', fallbackError);
                     nodeRes.destroy();
@@ -230,7 +230,7 @@ export type lrAppReturn<
     (
         | responseWrapper<addResponseHeaders, addResponseCookies,
             Exclude<lrRouterReturn<LrRouter<pathPrefix, handlers>, testMethod, testPath>, typeof lrNext>
-        >
+        >['response']
         | responseWrapper<addResponseHeaders, addResponseCookies, (
             errorResponseFunction extends (...args: any[]) => infer returnErrorResponseFunction
             ? (
@@ -239,13 +239,13 @@ export type lrAppReturn<
                 : never
             )
             : never
-        )>
+        )>['response']
         | responseWrapper<addResponseHeaders, addResponseCookies, (
             canRouterCallNext<pathPrefix, handlers, testMethod, testPath> extends true
             ? Awaited<ReturnType<noHandlerResponse>>
             : never
-        )>
-        | errorResponse
+        )>['response']
+        | errorResponse['response']
     ) : never;
 
 export type lrAppRequirements<
