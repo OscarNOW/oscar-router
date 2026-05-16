@@ -1022,13 +1022,11 @@ describe('features: direct execute APIs', () => {
             ip: '127.0.0.1',
             headers: Object.create(null),
             cookies: Object.create(null),
-        });
+        }) as any;
 
-        const lrResponseObject = response as any;
-
-        expect(lrResponseObject.response.status).toBe(200);
-        expect(lrResponseObject.response.headers['X-Direct']).toBe('yes');
-        expect(lrResponseObject.response.cookies.direct.value).toBe('yes');
+        expect(response.status).toBe(200);
+        expect(response.headers['X-Direct']).toBe('yes');
+        expect(response.cookies.direct.value).toBe('yes');
     });
 });
 
@@ -2006,11 +2004,10 @@ describe('more coverage: route matching internals and request state', () => {
             ip: '203.0.113.10',
             headers: { 'x-test': 'present' },
             cookies: { session: 'abc' },
-        });
-        const lrResponseObject = response as any;
+        }) as any;
 
-        expect(lrResponseObject.response.status).toBe(200);
-        expect(lrResponseObject.response.body.body).toEqual({
+        expect(response.status).toBe(200);
+        expect(response.body.body).toEqual({
             query: 'yes',
             header: 'present',
             cookie: 'abc',

@@ -10,6 +10,7 @@ import {
     type lrHandlerRequest,
     type lrRouterReturn, type lrAppReturn,
     type lrRouterRequirements,
+    type lrResponseObject,
 } from ".";
 import type { lrAppRequirements } from "./app";
 import type { file } from "./node";
@@ -536,7 +537,7 @@ test("lrApp with addResponseHeaders includes header in return type", () => {
     type AppRet = lrAppReturn<typeof app, "GET", "/hooked">;
     type _isLrNext = AppRet extends typeof lrNext ? true : false;
     const _a: _isLrNext = false;
-    type _isResponse = AppRet extends LrResponse<any> ? true : false;
+    type _isResponse = AppRet extends lrResponseObject ? true : false;
     const _b: _isResponse = true;
 });
 
@@ -552,7 +553,7 @@ test("lrApp with addResponseCookies includes cookie in return type", () => {
     });
 
     type AppRet = lrAppReturn<typeof app, "GET", "/cookies">;
-    type _isResponse = AppRet extends LrResponse<any> ? true : false;
+    type _isResponse = AppRet extends lrResponseObject ? true : false;
     const _v: _isResponse = true;
 });
 
@@ -570,7 +571,7 @@ test("lrApp with errorResponseFunction includes error response in union", () => 
     });
 
     type AppRet = lrAppReturn<typeof app, "GET", "/boom">;
-    type _isResponse = AppRet extends LrResponse<any> ? true : false;
+    type _isResponse = AppRet extends lrResponseObject ? true : false;
     const _v: _isResponse = true;
 });
 
