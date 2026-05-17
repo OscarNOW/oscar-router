@@ -34,9 +34,6 @@ type responseBody = {
 } | {
     type: 'buffer';
     body: Buffer;
-} | {
-    type: 'arrayBuffer';
-    body: ArrayBuffer;
 };
 
 export type responseCookieOptions = {
@@ -253,29 +250,6 @@ export class LrResponse<response extends lrResponseObject> {
             body: {
                 type: 'buffer',
                 body: buffer
-            }
-        } as any);
-    }
-
-    arrayBuffer<arrayBuffer extends ArrayBuffer>(arrayBuffer: arrayBuffer):
-        LrResponse<
-            simplify<
-                Omit<response, 'headers' | 'body'>
-                & {
-                    headers: simplify<Omit<response['headers'], 'Content-Type'> & { 'Content-Type': 'application/octet-stream' }>;
-                    body: { type: 'arrayBuffer'; body: arrayBuffer; }
-                }
-            >
-        > {
-        return new LrResponse({
-            ...this.response,
-            headers: {
-                ...this.response.headers,
-                'Content-Type': 'application/octet-stream',
-            },
-            body: {
-                type: 'arrayBuffer',
-                body: arrayBuffer
             }
         } as any);
     }

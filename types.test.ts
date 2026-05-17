@@ -276,14 +276,6 @@ test("lrResponse.buffer sets Content-Type octet-stream", () => {
     const _v: _isOctet = true;
 });
 
-test("lrResponse.arrayBuffer sets Content-Type octet-stream", () => {
-    const data = new ArrayBuffer(0);
-    const res = lrResponse().arrayBuffer(data);
-    type Headers = typeof res extends LrResponse<infer R> ? R["headers"] : never;
-    type _isOctet = Headers extends { "Content-Type": "application/octet-stream" } ? true : false;
-    const _v: _isOctet = true;
-});
-
 test("lrResponse.type overrides Content-Type", () => {
     const res = lrResponse().type("application/xml");
     type Headers = typeof res extends LrResponse<infer R> ? R["headers"] : never;
