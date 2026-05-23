@@ -20,7 +20,7 @@ export type lrGeneralHandlerMatch = {
         '*' | httpMethod | readonly httpMethod[],
         `/${string}`,
         generalValidations<'*' | httpMethod | readonly httpMethod[], `/${string}`>,
-        any
+        lrHandlerCallback<any, any, any, any, any, unknown>
     >;
 };
 
