@@ -114,7 +114,7 @@ class LrApp<
             return response.response as orAppReturn<this, testMethod, testPath>;
 
         } catch (e) {
-            console.warn('[lfm-router] Unhandled error in execute', e);
+            console.warn('[oscar-router] Unhandled error in execute', e);
             return this.errorResponse.response as orAppReturn<this, testMethod, testPath>;
         }
     }
@@ -126,20 +126,20 @@ class LrApp<
 
             response = await this.execute(req);
         } catch (e) {
-            console.warn('[lfm-router] Unhandled error in nodeExecute', e);
+            console.warn('[oscar-router] Unhandled error in nodeExecute', e);
             response = this.errorResponse.response;
         }
 
         try {
             await sendNodeResponse(nodeReq, nodeRes, response);
         } catch (e) {
-            console.warn('[lfm-router] Unhandled error in sendNodeResponse', e);
+            console.warn('[oscar-router] Unhandled error in sendNodeResponse', e);
 
             if (!nodeRes.headersSent) {
                 try {
                     await sendNodeResponse(nodeReq, nodeRes, this.errorResponse.response);
                 } catch (fallbackError) {
-                    console.warn('[lfm-router] Unhandled error while sending fallback errorResponse', fallbackError);
+                    console.warn('[oscar-router] Unhandled error while sending fallback errorResponse', fallbackError);
                     nodeRes.destroy();
                 }
             } else if (!nodeRes.writableEnded) {

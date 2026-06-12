@@ -308,7 +308,7 @@ describe('features: normal request handling', () => {
     });
 
     test('parses multipart fields and files', async () => {
-        const boundary = 'lfm-router-test-boundary';
+        const boundary = 'oscar-router-test-boundary';
         const server = await createTestServer(orHandler(['POST'], '/multipart', null, req => {
             return orResponse().json({
                 title: (req.body as any).title,
@@ -340,7 +340,7 @@ describe('features: normal request handling', () => {
     });
 
     test('parses multipart fields and keeps empty strings as empty strings', async () => {
-        const boundary = 'lfm-router-test-boundary';
+        const boundary = 'oscar-router-test-boundary';
         const server = await createTestServer(orHandler(['POST'], '/multipart-empty', null, req => {
             return orResponse().json({
                 empty: (req.body as any).empty,
@@ -636,7 +636,7 @@ describe('features: validations', () => {
     });
 
     test('validates files with files schema and transform', async () => {
-        const boundary = 'lfm-router-test-boundary';
+        const boundary = 'oscar-router-test-boundary';
         const localFileSchema = z.object({
             name: z.string(),
             mimeType: z.string(),
@@ -1798,7 +1798,7 @@ describe('security: body parsing', () => {
     });
 
     test('multipart bodies drop prototype-pollution field and file names', async () => {
-        const boundary = 'lfm-router-pollution-boundary';
+        const boundary = 'oscar-router-pollution-boundary';
         const server = await createTestServer(orHandler(['POST'], '/multipart-pollution', null, req => {
             return orResponse().json({
                 safeField: (req.body as any).safe,
@@ -1838,7 +1838,7 @@ describe('security: body parsing', () => {
     });
 
     test('files object on request drops prototype-pollution keys and uses null prototype', async () => {
-        const boundary = 'lfm-router-files-pollution-boundary';
+        const boundary = 'oscar-router-files-pollution-boundary';
         let capturedFiles: any = undefined;
 
         const server = await createTestServer(orHandler(['POST'], '/multipart-files-pp', null, req => {
@@ -2292,7 +2292,7 @@ describe('stress and limits', () => {
     });
 
     test('parses a large multipart file that remains below configured limits', async () => {
-        const boundary = 'lfm-router-large-file-boundary';
+        const boundary = 'oscar-router-large-file-boundary';
         const largeFile = 'x'.repeat(2 * 1024 * 1024);
         const server = await createTestServer(orHandler(['POST'], '/large-file', null, req => {
             return orResponse().json({
@@ -2322,7 +2322,7 @@ describe('stress and limits', () => {
     });
 
     test('enforces multipart field and file count limits', async () => {
-        const boundary = 'lfm-router-count-limit-boundary';
+        const boundary = 'oscar-router-count-limit-boundary';
         const parts = [
             ...Array.from({ length: 105 }, (_, index) => ({
                 name: `field${index}`,
