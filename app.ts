@@ -143,7 +143,7 @@ class LrApp<
                     nodeRes.destroy();
                 }
             } else if (!nodeRes.writableEnded) {
-                nodeRes.end();
+                nodeRes.writeHead(500, 'Internal Server Error').end();
             }
         }
     }
