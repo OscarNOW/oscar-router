@@ -5,8 +5,8 @@ const MAX_FILES = 10;
 const MAX_FIELDS = 100;
 
 import type { IncomingMessage, ServerResponse } from "node:http";
-import type { lrRequest } from "./types";
-import type { LrResponse, lrResponseObject, httpMethod } from "./response";
+import type { orRequest } from "./types";
+import type { LrResponse, orResponseObject, httpMethod } from "./response";
 
 import { httpMethods } from "./response";
 
@@ -14,15 +14,15 @@ import Busboy from 'busboy';
 import querystring from 'querystring';
 import z from "zod";
 
-export const lrFileSchema = z.object({
+export const orFileSchema = z.object({
     name: z.string(),
     mimeType: z.string(),
     buffer: z.instanceof(Buffer),
 });
 
-export type file = z.infer<typeof lrFileSchema>;
+export type file = z.infer<typeof orFileSchema>;
 
-type generalRequest = lrRequest<httpMethod, `/${string}`>;
+type generalRequest = orRequest<httpMethod, `/${string}`>;
 
 const COOKIE_NAME_REGEX = /^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$/;
 const COOKIE_VALUE_REGEX = /^[!#$%&'()*+\-./0-9:<=>?@A-Z[\]^_`a-z{|}~]*$/;
@@ -359,7 +359,7 @@ export async function transformNodeRequest(nodeReq: IncomingMessage): Promise<ge
     return req;
 }
 
-function cookiesToHeader(cookies: lrResponseObject['cookies']): string[] {
+function cookiesToHeader(cookies: orResponseObject['cookies']): string[] {
     return Object.entries(cookies).map(([name, cookie]) => {
         const { value, options } = cookie;
 
@@ -401,7 +401,7 @@ function cookiesToHeader(cookies: lrResponseObject['cookies']): string[] {
     });
 }
 
-export function sendNodeResponse(nodeReq: IncomingMessage, nodeRes: ServerResponse, response: lrResponseObject): Promise<void> {
+export function sendNodeResponse(nodeReq: IncomingMessage, nodeRes: ServerResponse, response: orResponseObject): Promise<void> {
     let headers: Record<string, string | string[]> = Object.create(null);
 
     if (Object.keys(response.cookies).length > 0) {

@@ -1,30 +1,30 @@
 // © 2026 Oscar Knap - Alle rechten voorbehouden
 
-import type { generalValidations, lrHandlerCallback } from "./handler";
-import type { canRouterCallNext, lrRequest, matchRequest, simplifyRequirements, validationsToRequirements } from "./types";
-import type { lrResponseObject, httpMethod } from "./response";
+import type { generalValidations, orHandlerCallback } from "./handler";
+import type { canRouterCallNext, orRequest, matchRequest, simplifyRequirements, validationsToRequirements } from "./types";
+import type { orResponseObject, httpMethod } from "./response";
 
-import { lrNext } from "./handler";
+import { orNext } from "./handler";
 import { LrHandler } from "./handler";
 import { LrResponse, } from "./response";
 
-export type lrGeneralRouterMatch = {
+export type orGeneralRouterMatch = {
     type: 'router';
     router: LrRouter<'' | `/${string}`, readonly generalHandlerOrRouter[]>;
-    matches: lrGeneralRouterMatchReturn[];
+    matches: orGeneralRouterMatchReturn[];
 };
 
-export type lrGeneralHandlerMatch = {
+export type orGeneralHandlerMatch = {
     type: 'handler';
     handler: LrHandler<
         '*' | httpMethod | readonly httpMethod[],
         `/${string}`,
         generalValidations<'*' | httpMethod | readonly httpMethod[], `/${string}`>,
-        lrHandlerCallback<httpMethod, `/${string}`, Record<string, any>, Record<string, any>, Record<string, any>, unknown>
+        orHandlerCallback<httpMethod, `/${string}`, Record<string, any>, Record<string, any>, Record<string, any>, unknown>
     >;
 };
 
-export type lrGeneralRouterMatchReturn = lrGeneralHandlerMatch | lrGeneralRouterMatch;
+export type orGeneralRouterMatchReturn = orGeneralHandlerMatch | orGeneralRouterMatch;
 
 type routerMatchReturnInternal<
     pathPrefix extends '' | `/${string}`,
@@ -116,7 +116,7 @@ export class LrRouter<pathPrefix extends '' | `/${string}`, handlers extends rea
         return this.#matchInternal('', method, path) as unknown as routerMatchReturn<pathPrefix, handlers, testMethod, testPath>;
     }
 
-    #matchInternal(previousPathPrefix: string, method: httpMethod, path: `/${string}`): lrGeneralRouterMatch {
+    #matchInternal(previousPathPrefix: string, method: httpMethod, path: `/${string}`): orGeneralRouterMatch {
         const currentPathPrefix = `${previousPathPrefix}${this.pathPrefix}`;
 
         if (!path.startsWith(currentPathPrefix)) {
@@ -139,7 +139,7 @@ export class LrRouter<pathPrefix extends '' | `/${string}`, handlers extends rea
             };
         }
 
-        let matches: lrGeneralRouterMatchReturn[] = [];
+        let matches: orGeneralRouterMatchReturn[] = [];
 
         for (const handler of this.handlers) {
             if (handler instanceof LrHandler) {
@@ -167,36 +167,36 @@ export class LrRouter<pathPrefix extends '' | `/${string}`, handlers extends rea
         };
     }
 
-    async execute<testMethod extends httpMethod, testPath extends `/${string}`>(req: lrRequest<testMethod, testPath>): Promise<lrRouterReturn<this, testMethod, testPath>> {
+    async execute<testMethod extends httpMethod, testPath extends `/${string}`>(req: orRequest<testMethod, testPath>): Promise<orRouterReturn<this, testMethod, testPath>> {
         const match = this.match(req.method, req.path);
 
         const response = await this.#executeInternal('', match, req);
 
-        if (response === lrNext) {
-            return lrNext as lrRouterReturn<this, testMethod, testPath>;
+        if (response === orNext) {
+            return orNext as orRouterReturn<this, testMethod, testPath>;
         }
 
         if (!(response instanceof LrResponse)) {
             throw new Error(`handler must return LrResponse, got typeof ${typeof response}`);
         }
 
-        return response as lrRouterReturn<this, testMethod, testPath>;
+        return response as orRouterReturn<this, testMethod, testPath>;
     }
 
     async #executeInternal(
         currentPathPrefix: string,
-        match: lrGeneralRouterMatchReturn,
-        req: lrRequest<httpMethod, `/${string}`>
-    ): Promise<LrResponse<lrResponseObject> | typeof lrNext> {
+        match: orGeneralRouterMatchReturn,
+        req: orRequest<httpMethod, `/${string}`>
+    ): Promise<LrResponse<orResponseObject> | typeof orNext> {
         if (match.type === 'handler') {
             const response = await match.handler.execute(currentPathPrefix, req);
 
-            if (response === lrNext) {
-                return lrNext;
+            if (response === orNext) {
+                return orNext;
             }
 
             if (!(response instanceof LrResponse)) {
-                throw new Error(`handler (${Array.isArray(match.handler.methods) ? match.handler.methods.join(', ') : match.handler.methods} ${match.handler.path}) must return LrResponse or lrNext, got typeof ${typeof response}`);
+                throw new Error(`handler (${Array.isArray(match.handler.methods) ? match.handler.methods.join(', ') : match.handler.methods} ${match.handler.path}) must return LrResponse or orNext, got typeof ${typeof response}`);
             }
 
             return response;
@@ -206,19 +206,19 @@ export class LrRouter<pathPrefix extends '' | `/${string}`, handlers extends rea
             for (const innerMatch of match.matches) {
                 const response = await this.#executeInternal(currentPathPrefix, innerMatch, req);
 
-                if (response === lrNext) {
+                if (response === orNext) {
                     continue;
                 }
 
                 if (!(response instanceof LrResponse)) {
-                    throw new Error(`handler must return LrResponse or lrNext, got typeof ${typeof response}`);
+                    throw new Error(`handler must return LrResponse or orNext, got typeof ${typeof response}`);
                 }
 
                 return response;
             }
         }
 
-        return lrNext;
+        return orNext;
     }
 };
 
@@ -234,7 +234,7 @@ type routerReturnInternal<
         ? (
             matchRequest<firstHandlerMethods, `${pathPrefix}${firstHandlerPath}`, testMethod, testPath> extends true
             ? (
-                Exclude<Awaited<ReturnType<firstHandlerCallback>>, typeof lrNext>
+                Exclude<Awaited<ReturnType<firstHandlerCallback>>, typeof orNext>
                 | (
                     firstHandlerValidations extends { failResponse: (...args: any[]) => infer returnFailResponse }
                     ? (
@@ -242,7 +242,7 @@ type routerReturnInternal<
                     ) : never
                 )
                 | (
-                    (typeof lrNext) extends Awaited<ReturnType<firstHandlerCallback>> ? (
+                    (typeof orNext) extends Awaited<ReturnType<firstHandlerCallback>> ? (
                         routerReturnInternal<pathPrefix, restHandlers, testMethod, testPath>
                     ) : never
                 )
@@ -265,7 +265,7 @@ type routerReturnInternal<
         never
     );
 
-export type lrRouterReturn<
+export type orRouterReturn<
     router extends LrRouter<'' | `/${string}`, readonly generalHandlerOrRouter[]>,
     testMethod extends httpMethod,
     testPath extends `/${string}`
@@ -275,7 +275,7 @@ export type lrRouterReturn<
         routerReturnInternal<pathPrefix, handlers, testMethod, testPath>
         | (
             canRouterCallNext<pathPrefix, handlers, testMethod, testPath> extends true
-            ? typeof lrNext
+            ? typeof orNext
             : never
         )
     ) : never;
@@ -294,7 +294,7 @@ type routerRequirementsInternal<
             ? (
                 validationsToRequirements<firstHandlerValidations>
                 & (
-                    (typeof lrNext) extends Awaited<ReturnType<firstHandlerCallback>> ? (
+                    (typeof orNext) extends Awaited<ReturnType<firstHandlerCallback>> ? (
                         routerRequirementsInternal<pathPrefix, restHandlers, testMethod, testPath>
                     ) : unknown
                 )
@@ -317,7 +317,7 @@ type routerRequirementsInternal<
     )
     ;
 
-export type lrRouterRequirements<
+export type orRouterRequirements<
     router extends LrRouter<'' | `/${string}`, readonly generalHandlerOrRouter[]>,
     testMethod extends httpMethod,
     testPath extends `/${string}`
@@ -327,6 +327,6 @@ export type lrRouterRequirements<
         simplifyRequirements<routerRequirementsInternal<pathPrefix, handlers, testMethod, testPath>>
     ) : never;
 
-export function lrRouter<pathPrefix extends '' | `/${string}`, handlers extends readonly generalHandlerOrRouter[]>(pathPrefix: pathPrefix, handlers: handlers): LrRouter<pathPrefix, handlers> {
+export function orRouter<pathPrefix extends '' | `/${string}`, handlers extends readonly generalHandlerOrRouter[]>(pathPrefix: pathPrefix, handlers: handlers): LrRouter<pathPrefix, handlers> {
     return new LrRouter(pathPrefix, handlers);
 }

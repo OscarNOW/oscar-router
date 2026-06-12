@@ -1,10 +1,10 @@
 // © 2026 Oscar Knap - Alle rechten voorbehouden
 
-import { lrHandler, lrApp, lrRouter, lrNext, lrResponse, lrFileSchema } from ".";
-import type { lrRouterReturn, lrRouterRequirements, lrAppReturn, lrAppRequirements, LrResponse } from ".";
+import { orHandler, orApp, orRouter, orNext, orResponse, orFileSchema } from ".";
+import type { orRouterReturn, orRouterRequirements, orAppReturn, orAppRequirements, LrResponse } from ".";
 import { z } from 'zod';
 
-const handler1 = lrHandler('*', '/foo/*', {
+const handler1 = orHandler('*', '/foo/*', {
     body: z.object({
         name: z.string(),
         foo: z.number()
@@ -16,8 +16,8 @@ const handler1 = lrHandler('*', '/foo/*', {
         '*': z.string().transform(a => parseInt(a)),
     }),
     files: z.object({
-        hi: lrFileSchema,
-        hi2: lrFileSchema.transform(({ name, ...rest }) => ({ name: 'hi2', ...rest })),
+        hi: orFileSchema,
+        hi2: orFileSchema.transform(({ name, ...rest }) => ({ name: 'hi2', ...rest })),
     }),
     failResponse: async ({ bodyError, queryError, paramsError }, req) => {
         req.method;
@@ -27,10 +27,10 @@ const handler1 = lrHandler('*', '/foo/*', {
         req.query;
 
         if (bodyError) {
-            // return lrNext;
+            // return orNext;
         }
 
-        return lrResponse().status(400).json({ success: false } as const);
+        return orResponse().status(400).json({ success: false } as const);
     }
 }, async req => {
     req.method;
@@ -40,35 +40,35 @@ const handler1 = lrHandler('*', '/foo/*', {
     req.query;
 
     if (Math.random() < 0.5) {
-        return lrNext;
+        return orNext;
     }
 
-    return lrResponse().status(200).text('Hello world');
+    return orResponse().status(200).text('Hello world');
 });
 
-const handler2 = lrHandler('*', '/*', {
+const handler2 = orHandler('*', '/*', {
     body: z.object({
         foo: z.string()
     }),
-    failResponse: () => lrResponse()
+    failResponse: () => orResponse()
 }, async req => {
-    // return lrNext();
-    // return lrJson({ success: true });
-    // return lrStatus(500, lrJson({ success: false }));
-    // return lrRedirect('/');
-    return lrResponse().status(500).json({ success: false } as const);
+    // return orNext();
+    // return orJson({ success: true });
+    // return orStatus(500, orJson({ success: false }));
+    // return orRedirect('/');
+    return orResponse().status(500).json({ success: false } as const);
 });
 
-const router = lrRouter('', [
+const router = orRouter('', [
     handler1,
     // handler2,
 ] as const);
 
-type c = lrRouterReturn<typeof router, 'GET', '/foo/hi'>;
+type c = orRouterReturn<typeof router, 'GET', '/foo/hi'>;
 
-const app = lrApp(router, {
-    errorResponse: lrResponse().status(500).json({ success: false } as const),
-    // errorResponseFunction: () => lrResponse().status(123),
+const app = orApp(router, {
+    errorResponse: orResponse().status(500).json({ success: false } as const),
+    // errorResponseFunction: () => orResponse().status(123),
     noHandlerResponse: (req) => {
         req.method;
         req.path;
@@ -76,7 +76,7 @@ const app = lrApp(router, {
         req.body;
         req.query;
 
-        return lrResponse().status(404).json({ success: false } as const);
+        return orResponse().status(404).json({ success: false } as const);
     },
     addResponseHeaders: (req, res) => ({
         foo: 'bar'
@@ -86,7 +86,7 @@ const app = lrApp(router, {
     } as const)
 });
 
-type a = lrAppReturn<typeof app, 'GET', '/foo/hi'>;
-type b = lrAppRequirements<typeof app, 'GET', '/foo/hi'>;
+type a = orAppReturn<typeof app, 'GET', '/foo/hi'>;
+type b = orAppRequirements<typeof app, 'GET', '/foo/hi'>;
 
 // const server = app.createServer();

@@ -2,28 +2,28 @@
 
 import { LrResponse } from "./response";
 import { sendNodeResponse, transformNodeRequest } from "./node";
-import { lrNext } from "./handler";
+import { orNext } from "./handler";
 import { LrRouter } from "./router";
 
-import type { canRouterCallNext, lrRequest } from "./types";
-import type { lrResponseObject, responseCookieOptions, responseWithCookies, responseWithHeaders, httpMethod } from "./response";
-import type { generalHandlerOrRouter, lrRouterRequirements, lrRouterReturn } from "./router";
+import type { canRouterCallNext, orRequest } from "./types";
+import type { orResponseObject, responseCookieOptions, responseWithCookies, responseWithHeaders, httpMethod } from "./response";
+import type { generalHandlerOrRouter, orRouterRequirements, orRouterReturn } from "./router";
 
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 
 type generalErrorResponseFunction =
-    (req: lrRequest<httpMethod, `/${string}`>, error: unknown)
-        => LrResponse<lrResponseObject> | Promise<LrResponse<lrResponseObject>>;
+    (req: orRequest<httpMethod, `/${string}`>, error: unknown)
+        => LrResponse<orResponseObject> | Promise<LrResponse<orResponseObject>>;
 
 type noHandlerResponseFunction =
-    (req: lrRequest<httpMethod, `/${string}`>)
-        => LrResponse<lrResponseObject> | Promise<LrResponse<lrResponseObject>>;
+    (req: orRequest<httpMethod, `/${string}`>)
+        => LrResponse<orResponseObject> | Promise<LrResponse<orResponseObject>>;
 
 type generalAddResponseHeaders =
-    (req: lrRequest<httpMethod, `/${string}`>, res: LrResponse<lrResponseObject>) => Record<string, string> | Promise<Record<string, string>>;
+    (req: orRequest<httpMethod, `/${string}`>, res: LrResponse<orResponseObject>) => Record<string, string> | Promise<Record<string, string>>;
 
 type generalAddResponseCookies =
-    (req: lrRequest<httpMethod, `/${string}`>, res: LrResponse<lrResponseObject>) =>
+    (req: orRequest<httpMethod, `/${string}`>, res: LrResponse<orResponseObject>) =>
         Record<
             string,
             { value: string; } & Partial<responseCookieOptions>
@@ -38,7 +38,7 @@ type generalAddResponseCookies =
 class LrApp<
     pathPrefix extends '' | `/${string}`,
     handlers extends readonly generalHandlerOrRouter[],
-    errorResponse extends LrResponse<lrResponseObject>,
+    errorResponse extends LrResponse<orResponseObject>,
     noHandlerResponse extends noHandlerResponseFunction,
     errorResponseFunction extends generalErrorResponseFunction | undefined,
     addResponseHeaders extends generalAddResponseHeaders | undefined,
@@ -64,15 +64,15 @@ class LrApp<
         this.addResponseCookies = addResponseCookies;
     }
 
-    async execute<testMethod extends httpMethod, testPath extends `/${string}`>(req: lrRequest<testMethod, testPath>): Promise<lrAppReturn<this, testMethod, testPath>> {
+    async execute<testMethod extends httpMethod, testPath extends `/${string}`>(req: orRequest<testMethod, testPath>): Promise<orAppReturn<this, testMethod, testPath>> {
         try {
 
-            let response: LrResponse<lrResponseObject>;
+            let response: LrResponse<orResponseObject>;
 
             try {
-                const routerResponse: LrResponse<lrResponseObject> | typeof lrNext = await this.router.execute(req);
+                const routerResponse: LrResponse<orResponseObject> | typeof orNext = await this.router.execute(req);
 
-                if (routerResponse === lrNext) {
+                if (routerResponse === orNext) {
                     const noHandlerResponse = await this.noHandlerResponse(req);
 
                     if (!(noHandlerResponse instanceof LrResponse)) {
@@ -85,7 +85,7 @@ class LrApp<
                         throw new Error(`handler must return LrResponse, got typeof ${typeof routerResponse}`);
                     }
 
-                    response = routerResponse as LrResponse<lrResponseObject>;
+                    response = routerResponse as LrResponse<orResponseObject>;
                 }
             } catch (e) {
                 if (!this.errorResponseFunction) {
@@ -108,19 +108,19 @@ class LrApp<
 
             if (this.addResponseCookies) {
                 const cookies = await this.addResponseCookies(req, response);
-                response = response.cookies(cookies) as LrResponse<lrResponseObject>;
+                response = response.cookies(cookies) as LrResponse<orResponseObject>;
             }
 
-            return response.response as lrAppReturn<this, testMethod, testPath>;
+            return response.response as orAppReturn<this, testMethod, testPath>;
 
         } catch (e) {
             console.warn('[lfm-router] Unhandled error in execute', e);
-            return this.errorResponse.response as lrAppReturn<this, testMethod, testPath>;
+            return this.errorResponse.response as orAppReturn<this, testMethod, testPath>;
         }
     }
 
     async nodeExecute(nodeReq: IncomingMessage, nodeRes: ServerResponse): Promise<void> {
-        let response: lrResponseObject;
+        let response: orResponseObject;
         try {
             const req = await transformNodeRequest(nodeReq);
 
@@ -165,7 +165,7 @@ class LrApp<
 
 type responseHeadersWrapper<
     addResponseHeaders extends generalAddResponseHeaders | undefined,
-    response extends lrResponseObject
+    response extends orResponseObject
 > =
     addResponseHeaders extends (req: any, res: any) => infer responseHeaders
     ? (
@@ -177,7 +177,7 @@ type responseHeadersWrapper<
 
 type responseCookiesWrapper<
     addResponseCookies extends generalAddResponseCookies | undefined,
-    response extends lrResponseObject
+    response extends orResponseObject
 > =
     addResponseCookies extends (req: any, res: any) => infer responseCookies
     ? (
@@ -193,7 +193,7 @@ type responseCookiesWrapper<
 type responseWrapper<
     addResponseHeaders extends generalAddResponseHeaders | undefined,
     addResponseCookies extends generalAddResponseCookies | undefined,
-    response extends LrResponse<lrResponseObject>
+    response extends LrResponse<orResponseObject>
 > =
     response extends LrResponse<infer responseObject>
     ? LrResponse<
@@ -205,11 +205,11 @@ type responseWrapper<
     >
     : never;
 
-export type lrAppReturn<
+export type orAppReturn<
     app extends LrApp<
         '' | `/${string}`,
         readonly generalHandlerOrRouter[],
-        LrResponse<lrResponseObject>,
+        LrResponse<orResponseObject>,
         noHandlerResponseFunction,
         generalErrorResponseFunction | undefined,
         generalAddResponseHeaders | undefined,
@@ -229,12 +229,12 @@ export type lrAppReturn<
     > ?
     (
         | responseWrapper<addResponseHeaders, addResponseCookies,
-            Exclude<lrRouterReturn<LrRouter<pathPrefix, handlers>, testMethod, testPath>, typeof lrNext>
+            Exclude<orRouterReturn<LrRouter<pathPrefix, handlers>, testMethod, testPath>, typeof orNext>
         >['response']
         | responseWrapper<addResponseHeaders, addResponseCookies, (
             errorResponseFunction extends (...args: any[]) => infer returnErrorResponseFunction
             ? (
-                Awaited<returnErrorResponseFunction> extends LrResponse<lrResponseObject>
+                Awaited<returnErrorResponseFunction> extends LrResponse<orResponseObject>
                 ? Awaited<returnErrorResponseFunction>
                 : never
             )
@@ -248,11 +248,11 @@ export type lrAppReturn<
         | errorResponse['response']
     ) : never;
 
-export type lrAppRequirements<
+export type orAppRequirements<
     app extends LrApp<
         '' | `/${string}`,
         readonly generalHandlerOrRouter[],
-        LrResponse<lrResponseObject>,
+        LrResponse<orResponseObject>,
         noHandlerResponseFunction,
         generalErrorResponseFunction | undefined,
         generalAddResponseHeaders | undefined,
@@ -261,13 +261,13 @@ export type lrAppRequirements<
     testMethod extends httpMethod,
     testPath extends `/${string}`
 > =
-    lrRouterRequirements<app['router'], testMethod, testPath>;
+    orRouterRequirements<app['router'], testMethod, testPath>;
 
-export function lrApp<
+export function orApp<
     pathPrefix extends '' | `/${string}`,
     handlers extends readonly generalHandlerOrRouter[],
     options extends {
-        errorResponse: LrResponse<lrResponseObject>;
+        errorResponse: LrResponse<orResponseObject>;
         noHandlerResponse: noHandlerResponseFunction;
         errorResponseFunction?: generalErrorResponseFunction;
         addResponseHeaders?: generalAddResponseHeaders;

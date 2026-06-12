@@ -62,7 +62,7 @@ type responseCookie = {
     options: responseCookieOptions;
 };
 
-export type responseWithHeaders<response extends lrResponseObject, headers extends Record<string, string>> =
+export type responseWithHeaders<response extends orResponseObject, headers extends Record<string, string>> =
     simplify<
         Omit<response, 'headers'>
         & {
@@ -71,7 +71,7 @@ export type responseWithHeaders<response extends lrResponseObject, headers exten
     >;
 
 export type responseWithCookies<
-    response extends lrResponseObject,
+    response extends orResponseObject,
     cookies extends Record<
         string,
         { value: string } & Partial<responseCookieOptions>
@@ -95,7 +95,7 @@ export type responseWithCookies<
         }
     >;
 
-export type lrResponseObject = {
+export type orResponseObject = {
     status: number;
     statusMessage: string;
     body: responseBody;
@@ -103,7 +103,7 @@ export type lrResponseObject = {
     cookies: Record<string, responseCookie>;
 };
 
-export class LrResponse<response extends lrResponseObject> {
+export class LrResponse<response extends orResponseObject> {
     response: response;
 
     constructor(response: response) {
@@ -398,7 +398,7 @@ export class LrResponse<response extends lrResponseObject> {
     }
 }
 
-export function lrResponse() {
+export function orResponse() {
     return new LrResponse({
         status: 200,
         statusMessage: defaultStatusMessages[200],

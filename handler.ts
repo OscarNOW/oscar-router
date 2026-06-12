@@ -1,12 +1,12 @@
 // © 2026 Oscar Knap - Alle rechten voorbehouden
 
 import type z from "zod";
-import { type LrResponse, type lrResponseObject, type httpMethod, httpMethods } from "./response";
-import type { lrHandlerRequest, lrRequest, matchRequest, methodsDefinitionToMethods, pathDefinitionToParams, pathDefinitionToType } from "./types";
+import { type LrResponse, type orResponseObject, type httpMethod, httpMethods } from "./response";
+import type { orHandlerRequest, orRequest, matchRequest, methodsDefinitionToMethods, pathDefinitionToParams, pathDefinitionToType } from "./types";
 import type { file } from "./node";
 
-// typescript sometimes converts the Symbol('lrNext') to symbol, so we just convert it to a special object
-export const lrNext = Symbol('lrNext') as unknown as 'lrNext' & { __lrNext: symbol };
+// typescript sometimes converts the Symbol('orNext') to symbol, so we just convert it to a special object
+export const orNext = Symbol('orNext') as unknown as 'orNext' & { __orNext: symbol };
 
 type pathParts = ({
     type: 'literal';
@@ -37,7 +37,7 @@ function pathToParts(path: string): pathParts {
             }
 
             if (parts.find(part => part.type === 'rest')) {
-                throw new Error('rest part already exists');
+                throw new Error('rest part aoready exists');
             }
 
             parts.push({
@@ -47,7 +47,7 @@ function pathToParts(path: string): pathParts {
             const name = part.slice(1);
 
             if (parts.find(part => part.type === 'param' && part.name === name)) {
-                throw new Error(`Param ${name} already exists`);
+                throw new Error(`Param ${name} aoready exists`);
             }
 
             if (name.trim().length === 0) {
@@ -192,9 +192,9 @@ function parseParams(pathPrefix: string, path: string, reqPath: string): Record<
     return params;
 }
 
-type lrHandlerReturn = LrResponse<lrResponseObject> | typeof lrNext;
+type orHandlerReturn = LrResponse<orResponseObject> | typeof orNext;
 
-export type lrHandlerCallback<
+export type orHandlerCallback<
     method extends httpMethod,
     path extends `/${string}`,
     params extends Record<string, any>, // any, because it can be transformed with zod
@@ -202,8 +202,8 @@ export type lrHandlerCallback<
     files extends Record<string, any>, // any, because it can be transformed with zod
     body extends any
 > =
-    (req: lrHandlerRequest<method, path, params, query, files, body>)
-        => (lrHandlerReturn | Promise<lrHandlerReturn>);
+    (req: orHandlerRequest<method, path, params, query, files, body>)
+        => (orHandlerReturn | Promise<orHandlerReturn>);
 
 export type generalValidations<
     methods extends '*' | httpMethod | readonly httpMethod[],
@@ -214,30 +214,30 @@ export type generalValidations<
     params?: z.ZodType<unknown, pathDefinitionToParams<path>>;
     files?: z.ZodType<unknown, Record<string, file>>;
     failResponse: (
-        errors: lrValidationErrors,
-        req: lrRequest<methodsDefinitionToMethods<methods>, pathDefinitionToType<path>>
-    ) => LrResponse<lrResponseObject> | Promise<LrResponse<lrResponseObject>>;
+        errors: orValidationErrors,
+        req: orRequest<methodsDefinitionToMethods<methods>, pathDefinitionToType<path>>
+    ) => LrResponse<orResponseObject> | Promise<LrResponse<orResponseObject>>;
 };
 
-export type lrValidationErrors = {
+export type orValidationErrors = {
     bodyError: z.ZodError | null;
     filesError: z.ZodError | null;
     queryError: z.ZodError | null;
     paramsError: z.ZodError | null;
 };
 
-export type lrGeneralLrHandler = LrHandler<
+export type orGeneralLrHandler = LrHandler<
     '*' | httpMethod | readonly httpMethod[],
     `/${string}`,
     generalValidations<'*' | httpMethod | readonly httpMethod[], `/${string}`>,
-    lrHandlerCallback<httpMethod, `/${string}`, Record<string, any>, Record<string, any>, Record<string, any>, unknown>
+    orHandlerCallback<httpMethod, `/${string}`, Record<string, any>, Record<string, any>, Record<string, any>, unknown>
 >;
 
 export class LrHandler<
     methods extends '*' | httpMethod | readonly httpMethod[],
     path extends string,
     validations extends generalValidations<methods, path>,
-    callback extends lrHandlerCallback<
+    callback extends orHandlerCallback<
         methodsDefinitionToMethods<methods>,
         pathDefinitionToType<path>,
         validations extends { params: any } ? z.output<validations['params']> : pathDefinitionToParams<path>,
@@ -290,7 +290,7 @@ export class LrHandler<
 
     async execute(
         pathPrefix: string,
-        req: lrRequest<methodsDefinitionToMethods<methods>, pathDefinitionToType<path>>
+        req: orRequest<methodsDefinitionToMethods<methods>, pathDefinitionToType<path>>
     ): Promise<
         Awaited<ReturnType<callback>> // awaited and promise, because callback doesn't have to be async
         | (
@@ -363,11 +363,11 @@ export class LrHandler<
     }
 };
 
-export function lrHandler<
+export function orHandler<
     methods extends '*' | httpMethod | readonly httpMethod[],
     path extends `/${string}`,
     validations extends generalValidations<methods, path>,
-    callback extends lrHandlerCallback<
+    callback extends orHandlerCallback<
         methodsDefinitionToMethods<methods>,
         pathDefinitionToType<path>,
         validations extends { params: any } ? z.output<validations['params']> : pathDefinitionToParams<path>,

@@ -1,7 +1,7 @@
 // © 2026 Oscar Knap - Alle rechten voorbehouden
 
 import type z from "zod";
-import type { LrHandler, lrNext } from "./handler";
+import type { LrHandler, orNext } from "./handler";
 import type { LrRouter } from "./router";
 import type { httpMethod } from "./response";
 import type { file } from "./node";
@@ -10,7 +10,7 @@ export interface requestData {
     // user can augment this
 };
 
-export type lrRequest<
+export type orRequest<
     method extends httpMethod,
     path extends `/${string}`,
 > = {
@@ -28,7 +28,7 @@ export type lrRequest<
     cookies: Record<string, string>;
 };
 
-export type lrHandlerRequest<
+export type orHandlerRequest<
     method extends httpMethod,
     path extends `/${string}`,
     params extends Record<string, any>, // any, because it can be transformed with zod
@@ -194,7 +194,7 @@ export type canRouterCallNext<
         ? (
             matchRequest<firstHandlerMethods, `${pathPrefix}${firstHandlerPath}`, testMethod, testPath> extends true
             ? (
-                (typeof lrNext) extends Awaited<ReturnType<firstHandlerCallback>>
+                (typeof orNext) extends Awaited<ReturnType<firstHandlerCallback>>
                 ? canRouterCallNext<pathPrefix, restHandlers, testMethod, testPath>
                 : false
             ) : (
