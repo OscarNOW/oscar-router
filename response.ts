@@ -5,6 +5,8 @@ import type { simplify } from './types.ts';
 export const httpMethods = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'] as const;
 export type httpMethod = typeof httpMethods[number];
 
+type jsonStringifyable = number | string | null | boolean | jsonStringifyable[] | { [key: string]: jsonStringifyable };
+
 const defaultStatusMessages = {
     200: 'OK',
     201: 'Created',
@@ -27,7 +29,7 @@ const defaultStatusMessages = {
 
 type responseBody = {
     type: 'json';
-    body: object;
+    body: jsonStringifyable;
 } | {
     type: 'text';
     body: string;
@@ -162,7 +164,7 @@ export class LrResponse<response extends orResponseObject> {
         } as any);
     }
 
-    json<data extends object>(data: data):
+    json<data extends jsonStringifyable>(data: data):
         LrResponse<
             simplify<
                 Omit<response, 'headers' | 'body'>
