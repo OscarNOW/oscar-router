@@ -2,7 +2,6 @@
   "name": "oscar-router",
   "module": "index.ts",
   "type": "module",
-  "private": true,
   "scripts": {
     "dev": "bun --watch idea.ts",
     "t": "bun test && tsc --noEmit",
@@ -19,5 +18,11 @@
   "dependencies": {
     "busboy": "^1.6.0",
     "zod": "^4.4.3"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
   }
 }
