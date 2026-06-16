@@ -5,7 +5,8 @@
   "private": true,
   "scripts": {
     "dev": "bun --watch idea.ts",
-    "t": "bun test && tsc --noEmit"
+    "t": "bun test && tsc --noEmit",
+    "b": "tsc -p tsconfig.build.json"
   },
   "devDependencies": {
     "@types/busboy": "^1.5.4",
