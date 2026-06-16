@@ -1,0 +1,384 @@
+// © 2026 Oscar Knap - Alle rechten voorbehouden
+const MAX_SIZE = 90 * 1024 * 1024; // 90 MB
+const MAX_FILES = 10;
+const MAX_FIELDS = 100;
+import { httpMethods } from "./response";
+import Busboy from 'busboy';
+import querystring from 'querystring';
+import z from "zod";
+export const orFileSchema = z.object({
+    name: z.string(),
+    mimeType: z.string(),
+    buffer: z.instanceof(Buffer),
+});
+const COOKIE_NAME_REGEX = /^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$/;
+const COOKIE_VALUE_REGEX = /^[!#$%&'()*+\-./0-9:<=>?@A-Z[\]^_`a-z{|}~]*$/;
+const COOKIE_DOMAIN_REGEX = /^(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)*[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?$/;
+const PROTOTYPE_POLLUTION_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
+function hasControlCharacters(value) {
+    return /[\u0000-\u001F\u007F]/.test(value);
+}
+function decodeCookieValue(value) {
+    try {
+        const decoded = decodeURIComponent(value);
+        return hasControlCharacters(decoded) ? null : decoded;
+    }
+    catch {
+        return value;
+    }
+}
+function assertCookieName(name) {
+    if (!COOKIE_NAME_REGEX.test(name)) {
+        throw new Error(`Invalid cookie name: ${name}`);
+    }
+}
+function assertCookieValue(value) {
+    if (!COOKIE_VALUE_REGEX.test(value)) {
+        throw new Error('Invalid cookie value');
+    }
+}
+function assertCookiePath(path) {
+    if (hasControlCharacters(path) || path.includes(';')) {
+        throw new Error(`Invalid cookie path: ${path}`);
+    }
+}
+function assertCookieDomain(domain) {
+    if (domain && !COOKIE_DOMAIN_REGEX.test(domain)) {
+        throw new Error(`Invalid cookie domain: ${domain}`);
+    }
+}
+function assertCookieMaxAge(maxAge) {
+    if (!Number.isSafeInteger(maxAge) || maxAge < 0) {
+        throw new Error(`Invalid cookie maxAge: ${maxAge}`);
+    }
+}
+function sanitizeRecord(input) {
+    const output = Object.create(null);
+    for (const [key, value] of Object.entries(input)) {
+        if (PROTOTYPE_POLLUTION_KEYS.has(key))
+            continue;
+        output[key] = value;
+    }
+    return output;
+}
+function parseBody(nodeReq) {
+    let contentType = nodeReq.headers['content-type'];
+    if (contentType && Array.isArray(contentType)) {
+        contentType = contentType[0];
+    }
+    if (!contentType)
+        contentType = undefined;
+    if (contentType) {
+        contentType = contentType
+            .split(';')[0]
+            .toLowerCase()
+            .trim();
+    }
+    if (contentType && contentType === "application/json") {
+        return new Promise((resolve, reject) => {
+            let body = "";
+            let size = 0;
+            nodeReq.on("data", (chunk) => {
+                size += chunk.length;
+                if (size > MAX_SIZE) {
+                    nodeReq.destroy();
+                    return reject(new Error("Body too large"));
+                }
+                body += chunk.toString();
+            });
+            nodeReq.on("error", reject);
+            nodeReq.on("end", () => {
+                if (!body) {
+                    return reject(new Error("No body"));
+                }
+                try {
+                    resolve({
+                        body: JSON.parse(body),
+                        files: Object.create(null)
+                    });
+                }
+                catch (e) {
+                    reject(e);
+                }
+            });
+        });
+    }
+    if (contentType && contentType === "application/x-www-form-urlencoded") {
+        return new Promise((resolve, reject) => {
+            let body = "";
+            let size = 0;
+            nodeReq.on("data", (chunk) => {
+                size += chunk.length;
+                if (size > MAX_SIZE) {
+                    nodeReq.destroy();
+                    return reject(new Error("Body too large"));
+                }
+                body += chunk.toString();
+            });
+            nodeReq.on("error", reject);
+            nodeReq.on("end", () => {
+                try {
+                    resolve({
+                        body: sanitizeRecord(querystring.parse(body)),
+                        files: Object.create(null)
+                    });
+                }
+                catch (e) {
+                    reject(e);
+                }
+            });
+        });
+    }
+    if (contentType && contentType == "multipart/form-data") {
+        return new Promise((resolve, reject) => {
+            let total = 0;
+            nodeReq.on("data", (chunk) => {
+                total += chunk.length;
+                if (total > MAX_SIZE) {
+                    nodeReq.unpipe(); // stop piping to busboy
+                    nodeReq.destroy(); // abort connection
+                    return reject(new Error("Body too large"));
+                }
+            });
+            const busboy = Busboy({
+                headers: nodeReq.headers,
+                limits: {
+                    fileSize: MAX_SIZE,
+                    fields: MAX_FIELDS,
+                    files: MAX_FILES
+                }
+            });
+            let body = Object.create(null);
+            let files = Object.create(null);
+            busboy.on("field", (name, val) => {
+                if (PROTOTYPE_POLLUTION_KEYS.has(name))
+                    return;
+                body[name] = val;
+            });
+            busboy.on("file", (name, file, info) => {
+                if (PROTOTYPE_POLLUTION_KEYS.has(name)) {
+                    file.resume();
+                    return;
+                }
+                if (files[name]) {
+                    file.resume();
+                    return;
+                }
+                const chunks = [];
+                file.on("data", d => chunks.push(d));
+                file.on("end", () => {
+                    files[name] = {
+                        name: info.filename,
+                        mimeType: info.mimeType,
+                        buffer: Buffer.concat(chunks),
+                    };
+                });
+            });
+            busboy.on("finish", () => {
+                resolve({ body, files });
+            });
+            busboy.on("error", reject);
+            nodeReq.pipe(busboy);
+        });
+    }
+    return Promise.resolve({ body: null, files: Object.create(null) });
+}
+function parseCookies(nodeReq) {
+    let cookieHeader = nodeReq.headers['cookie'];
+    if (cookieHeader && Array.isArray(cookieHeader)) {
+        cookieHeader = cookieHeader[0];
+    }
+    if (!cookieHeader) {
+        return Object.create(null);
+    }
+    ;
+    cookieHeader = cookieHeader.trim();
+    const parts = cookieHeader.split(';');
+    let cookies = Object.create(null);
+    for (const part of parts) {
+        const cookiePart = part.trim();
+        const separatorIndex = cookiePart.indexOf('=');
+        if (separatorIndex <= 0)
+            continue;
+        const name = cookiePart.slice(0, separatorIndex).trim();
+        if (!COOKIE_NAME_REGEX.test(name))
+            continue;
+        if (PROTOTYPE_POLLUTION_KEYS.has(name))
+            continue;
+        let value = cookiePart.slice(separatorIndex + 1).trim();
+        if (value.startsWith('"') && value.endsWith('"')) {
+            value = value.slice(1, value.length - 1);
+        }
+        if (!COOKIE_VALUE_REGEX.test(value))
+            continue;
+        const decodedValue = decodeCookieValue(value);
+        if (decodedValue === null)
+            continue;
+        cookies[name] = decodedValue;
+    }
+    return cookies;
+}
+export async function transformNodeRequest(nodeReq) {
+    let reqUrl = nodeReq.url;
+    if (!reqUrl) {
+        throw new Error('No url');
+    }
+    if (reqUrl.startsWith('//')) {
+        throw new Error('Invalid url');
+    }
+    if (!reqUrl.startsWith('/')) {
+        reqUrl = `/${reqUrl}`;
+    }
+    const parsedUrl = URL.parse(reqUrl, 'http://localhost');
+    if (!parsedUrl) {
+        throw new Error('Failed parsing url');
+    }
+    if (parsedUrl.protocol !== 'http:' ||
+        parsedUrl.host !== 'localhost' ||
+        parsedUrl.origin !== 'http://localhost' ||
+        parsedUrl.username !== '' ||
+        parsedUrl.password !== '' ||
+        parsedUrl.port !== '') {
+        throw new Error('Failed parsing url');
+    }
+    let path = parsedUrl.pathname;
+    if (path.endsWith('/')) {
+        path = path.slice(0, path.length - 1);
+    }
+    if (!path.startsWith('/')) {
+        path = `/${path}`;
+    }
+    let query = Object.create(null);
+    parsedUrl.searchParams.forEach((value, key) => {
+        if (key === '__proto__')
+            return;
+        if (key === 'prototype')
+            return;
+        if (key === 'constructor')
+            return;
+        query[key] = value;
+    });
+    let headers = Object.create(null);
+    for (const [key, value] of Object.entries(nodeReq.headers)) {
+        if (key === '__proto__')
+            continue;
+        if (key === 'prototype')
+            continue;
+        if (key === 'constructor')
+            continue;
+        if (!value) {
+            continue;
+        }
+        if (Array.isArray(value)) {
+            let first = value[0];
+            if (!first) {
+                continue;
+            }
+            headers[key] = first;
+        }
+        else {
+            headers[key] = value;
+        }
+    }
+    const { body, files } = await parseBody(nodeReq);
+    const cookies = parseCookies(nodeReq);
+    let method = nodeReq.method;
+    let isHead = false;
+    if (method === 'HEAD') {
+        isHead = true;
+        method = 'GET';
+    }
+    if (!httpMethods.includes(method)) {
+        throw new Error('Invalid method');
+    }
+    const req = {
+        method: method,
+        isHead,
+        path: path,
+        url: reqUrl,
+        params: null,
+        query,
+        body,
+        files,
+        data: Object.create(null),
+        ip: nodeReq.socket.remoteAddress,
+        headers,
+        cookies
+    };
+    return req;
+}
+function cookiesToHeader(cookies) {
+    return Object.entries(cookies).map(([name, cookie]) => {
+        const { value, options } = cookie;
+        assertCookieName(name);
+        assertCookiePath(options.path);
+        assertCookieDomain(options.domain);
+        assertCookieMaxAge(options.maxAge);
+        if (options.sameSite === 'none' && !options.secure) {
+            throw new Error('Cookies with SameSite=None must also set Secure');
+        }
+        if (options.partitioned && !options.secure) {
+            throw new Error('Partitioned cookies must also set Secure');
+        }
+        if (hasControlCharacters(value)) {
+            throw new Error('Invalid cookie value');
+        }
+        const encodedValue = encodeURIComponent(value);
+        assertCookieValue(encodedValue);
+        const parts = [`${name}=${encodedValue}`];
+        if (options.path)
+            parts.push(`Path=${options.path}`);
+        if (options.domain)
+            parts.push(`Domain=${options.domain}`);
+        if (options.maxAge !== undefined)
+            parts.push(`Max-Age=${options.maxAge}`);
+        if (options.httpOnly)
+            parts.push('HttpOnly');
+        if (options.secure)
+            parts.push('Secure');
+        if (options.partitioned)
+            parts.push('Partitioned');
+        if (options.sameSite) {
+            parts.push(`SameSite=${options.sameSite.charAt(0).toUpperCase() + options.sameSite.slice(1)}`);
+        }
+        return parts.join('; ');
+    });
+}
+export function sendNodeResponse(nodeReq, nodeRes, response) {
+    let headers = Object.create(null);
+    if (Object.keys(response.cookies).length > 0) {
+        headers['Set-Cookie'] = cookiesToHeader(response.cookies);
+    }
+    for (const [key, value] of Object.entries(response.headers)) {
+        if (key === '__proto__')
+            continue;
+        if (key === 'prototype')
+            continue;
+        if (key === 'constructor')
+            continue;
+        headers[key] = value;
+    }
+    for (const [key, value] of Object.entries(headers)) {
+        nodeRes.setHeader(key, value);
+    }
+    nodeRes.writeHead(response.status, response.statusMessage);
+    if (nodeReq.method === 'HEAD') {
+        nodeRes.end();
+        return Promise.resolve();
+    }
+    return new Promise((resolve, reject) => {
+        if (response.body.type === 'json') {
+            const stringified = JSON.stringify(response.body.body);
+            nodeRes.end(stringified, resolve);
+        }
+        else if (response.body.type === 'text') {
+            nodeRes.end(response.body.body, resolve);
+        }
+        else if (response.body.type === 'buffer') {
+            nodeRes.end(response.body.body, resolve);
+        }
+        else {
+            nodeRes.end();
+        }
+    });
+}
