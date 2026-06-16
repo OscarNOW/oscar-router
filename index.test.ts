@@ -262,7 +262,7 @@ describe('features: normal request handling', () => {
     test('parses JSON request bodies and exposes them to handlers', async () => {
         const server = await createTestServer(orHandler(['POST'], '/json', null, req => {
             return orResponse().json({
-                body: req.body,
+                body: req.body as any,
             } as const);
         }));
 
@@ -284,7 +284,7 @@ describe('features: normal request handling', () => {
     test('parses urlencoded request bodies including repeated keys', async () => {
         const server = await createTestServer(orHandler(['POST'], '/form', null, req => {
             return orResponse().json({
-                body: req.body,
+                body: req.body as any,
             } as const);
         }));
 
@@ -365,7 +365,7 @@ describe('features: normal request handling', () => {
     test('uses null for unsupported content types', async () => {
         const server = await createTestServer(orHandler(['POST'], '/raw', null, req => {
             return orResponse().json({
-                body: req.body,
+                body: req.body as any,
             } as const);
         }));
 
@@ -560,8 +560,8 @@ describe('features: route matching and fallthrough', () => {
             const params = req.params as Record<string, string>;
 
             return orResponse().json({
-                teamId: params.teamId,
-                memberId: params.memberId,
+                teamId: params.teamId ?? null,
+                memberId: params.memberId ?? null,
             } as const);
         }));
 
@@ -915,7 +915,7 @@ describe('features: nested routers', () => {
                 // @ts-ignore idk why there is an error. sometimes there is an error and sometimes there is not
                 orHandler(['GET'], '/:id', null, req => {
                     const params = req.params as Record<string, string>;
-                    return orResponse().json({ id: params.id } as const);
+                    return orResponse().json({ id: params.id ?? null } as const);
                 }),
             ]),
         ]));
@@ -934,7 +934,7 @@ describe('features: nested routers', () => {
                 // @ts-ignore idk why there is an error. sometimes there is an error and sometimes there is not
                 orHandler(['GET'], '/:id', null, req => {
                     const params = req.params as Record<string, string>;
-                    return orResponse().json({ id: params.id } as const);
+                    return orResponse().json({ id: params.id ?? null } as const);
                 }),
             ]),
         ]));
@@ -952,7 +952,7 @@ describe('features: nested routers', () => {
             // @ts-ignore idk why there is an error. sometimes there is an error and sometimes there is not
             orHandler('GET', '/:id', null, req => {
                 const params = req.params as Record<string, string>;
-                return orResponse().json({ id: params.id } as const);
+                return orResponse().json({ id: params.id ?? null } as const);
             }),
         ]));
 
@@ -971,7 +971,7 @@ describe('features: direct execute APIs', () => {
             orHandler(['GET'], '/direct/:id', null, (req: any) => {
                 const params = req.params as Record<string, string>;
 
-                return orResponse().json({ id: params.id } as const);
+                return orResponse().json({ id: params.id ?? null } as const);
             }),
         ]);
 
@@ -1338,7 +1338,7 @@ describe('security: cookies', () => {
     test('parses safe percent-encoded request cookies as application values', async () => {
         const server = await createTestServer(orHandler(['GET'], '/cookies', null, req => {
             return orResponse().json({
-                theme: req.cookies.theme,
+                theme: req.cookies.theme ?? null,
             } as const);
         }));
 
@@ -1356,7 +1356,7 @@ describe('security: cookies', () => {
         const server = await createTestServer(orHandler(['GET'], '/cookies', null, req => {
             return orResponse().json({
                 proto: req.cookies.__proto__ ?? null,
-                constructorCookie: req.cookies.constructor ?? null,
+                constructorCookie: req.cookies.constructor as any ?? null,
                 prototypeCookie: req.cookies.prototype ?? null,
                 unsafe: req.cookies.unsafe ?? null,
             } as const);
@@ -1399,9 +1399,9 @@ describe('security: request normalization', () => {
         const server = await createTestServer(orHandler(['GET'], '/query', null, req => {
             return orResponse().json({
                 proto: req.query.__proto__ ?? null,
-                constructorQuery: req.query.constructor ?? null,
+                constructorQuery: req.query.constructor as any ?? null,
                 prototypeQuery: req.query.prototype ?? null,
-                safe: req.query.safe,
+                safe: req.query.safe ?? null,
             } as const);
         }));
 
@@ -1420,9 +1420,9 @@ describe('security: request normalization', () => {
     test('decodes query values and uses the last value for duplicate query keys', async () => {
         const server = await createTestServer(orHandler(['GET'], '/query', null, req => {
             return orResponse().json({
-                next: req.query.next,
-                multi: req.query.multi,
-                empty: req.query.empty,
+                next: req.query.next ?? null,
+                multi: req.query.multi ?? null,
+                empty: req.query.empty ?? null,
             } as const);
         }));
 
@@ -1459,7 +1459,7 @@ describe('security: headers', () => {
     test('normalizes request header names and exposes Node-combined duplicate header values', async () => {
         const server = await createTestServer(orHandler(['GET'], '/headers', null, req => {
             return orResponse().json({
-                token: req.headers['x-test-token'],
+                token: req.headers['x-test-token'] ?? null,
             } as const);
         }));
 
@@ -1479,9 +1479,9 @@ describe('security: headers', () => {
         const server = await createTestServer(orHandler(['GET'], '/headers', null, req => {
             return orResponse().json({
                 proto: req.headers.__proto__ ?? null,
-                constructorHeader: req.headers.constructor ?? null,
+                constructorHeader: req.headers.constructor as any ?? null,
                 prototypeHeader: req.headers.prototype ?? null,
-                safe: req.headers['x-safe'],
+                safe: req.headers['x-safe'] ?? null,
             } as const);
         }));
 
@@ -1574,7 +1574,7 @@ describe('security: path normalization and route matching', () => {
             const params = req.params as Record<string, string>;
 
             return orResponse().json({
-                name: params.name,
+                name: params.name ?? null,
             } as const);
         }));
 
@@ -1617,7 +1617,7 @@ describe('security: path normalization and route matching', () => {
             const params = req.params as Record<string, string>;
 
             return orResponse().json({
-                name: params.name,
+                name: params.name ?? null,
             } as const);
         }));
 
@@ -1639,7 +1639,7 @@ describe('security: path normalization and route matching', () => {
 
                 return orResponse().json({
                     type: 'rest',
-                    rest: params['*'],
+                    rest: params['*'] ?? null,
                 } as const);
             }),
         ]);
@@ -1674,7 +1674,7 @@ describe('security: path normalization and route matching', () => {
         const server = await createTestServer(orHandler(['GET'], '/abc/*', null, (req) => {
             const params = req.params as Record<string, string>;
             return orResponse().json({
-                rest: params['*'],
+                rest: params['*'] ?? null,
             } as const);
         }));
 
@@ -1884,10 +1884,10 @@ describe('security: body parsing', () => {
             const body = req.body as Record<string, unknown>;
 
             return orResponse().json({
-                safe: body.safe,
-                proto: body.__proto__ ?? null,
-                prototype: body.prototype ?? null,
-                constructorValue: body.constructor ?? null,
+                safe: body.safe as any ?? null,
+                proto: body.__proto__ as any ?? null,
+                prototype: body.prototype as any ?? null,
+                constructorValue: body.constructor as any ?? null,
             } as const);
         }));
 
@@ -1933,7 +1933,7 @@ describe('more coverage: route matching internals and request state', () => {
             }),
             orHandler(['GET'], '/state', null, req => {
                 return orResponse().json({
-                    user: (req.data as Record<string, unknown>).user,
+                    user: (req.data as any).user ?? null,
                 } as const);
             }),
         ]);
@@ -2010,7 +2010,7 @@ describe('more coverage: URL and query edge cases', () => {
     test('decodes plus signs in query values as spaces', async () => {
         const server = await createTestServer(orHandler(['GET'], '/search', null, req => {
             return orResponse().json({
-                q: req.query.q,
+                q: req.query.q ?? null,
             } as const);
         }));
 
@@ -2025,8 +2025,8 @@ describe('more coverage: URL and query edge cases', () => {
     test('keeps blank query keys as explicit data', async () => {
         const server = await createTestServer(orHandler(['GET'], '/blank-query', null, req => {
             return orResponse().json({
-                blank: req.query[''],
-                safe: req.query.safe,
+                blank: req.query[''] ?? null,
+                safe: req.query.safe ?? null,
             } as const);
         }));
 
@@ -2044,7 +2044,7 @@ describe('more coverage: URL and query edge cases', () => {
     test('treats semicolons in query as part of the value, not as separators', async () => {
         const server = await createTestServer(orHandler(['GET'], '/query-semicolon', null, req => {
             return orResponse().json({
-                value: req.query.a,
+                value: req.query.a ?? null,
                 b: req.query.b ?? null,
             } as const);
         }));
@@ -2065,7 +2065,7 @@ describe('more coverage: cookie edge cases', () => {
     test('drops invalid request cookie names and raw invalid values', async () => {
         const server = await createTestServer(orHandler(['GET'], '/cookie-edge', null, req => {
             return orResponse().json({
-                valid: req.cookies.valid,
+                valid: req.cookies.valid ?? null,
                 spacedName: req.cookies['bad name'] ?? null,
                 rawSpace: req.cookies.rawspace ?? null,
             } as const);
@@ -2089,7 +2089,7 @@ describe('more coverage: cookie edge cases', () => {
     test('keeps malformed percent-encoded cookie values as raw safe data', async () => {
         const server = await createTestServer(orHandler(['GET'], '/cookie-malformed', null, req => {
             return orResponse().json({
-                malformed: req.cookies.malformed,
+                malformed: req.cookies.malformed ?? null,
             } as const);
         }));
 
@@ -2109,7 +2109,7 @@ describe('more coverage: cookie edge cases', () => {
     test('uses the last duplicate request cookie value', async () => {
         const server = await createTestServer(orHandler(['GET'], '/cookie-duplicates', null, req => {
             return orResponse().json({
-                session: req.cookies.session,
+                session: req.cookies.session ?? null,
             } as const);
         }));
 
@@ -2213,7 +2213,7 @@ describe('stress and limits', () => {
             (req.data as Record<string, string>).id = params.id ?? '';
 
             return orResponse().json({
-                id: (req.data as Record<string, string>).id,
+                id: (req.data as Record<string, string>).id ?? null,
             } as const);
         }));
 
@@ -2296,9 +2296,9 @@ describe('stress and limits', () => {
         const largeFile = 'x'.repeat(2 * 1024 * 1024);
         const server = await createTestServer(orHandler(['POST'], '/large-file', null, req => {
             return orResponse().json({
-                name: req.files.upload?.name,
-                mimeType: req.files.upload?.mimeType,
-                size: req.files.upload?.buffer.length,
+                name: req.files.upload?.name ?? null,
+                mimeType: req.files.upload?.mimeType ?? null,
+                size: req.files.upload?.buffer.length ?? null,
             } as const);
         }));
 
