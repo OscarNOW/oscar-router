@@ -3,6 +3,9 @@ import { httpMethods } from "./response";
 // typescript sometimes converts the Symbol('orNext') to symbol, so we just convert it to a special object
 export const orNext = Symbol('orNext');
 function pathToParts(path) {
+    if (typeof path !== 'string') {
+        throw new Error(`Path must be a string, got ${path} (${typeof path})`);
+    }
     if (!path.startsWith('/')) {
         throw new Error(`Path must start with /, got ${path}`);
     }
