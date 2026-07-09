@@ -41,7 +41,7 @@ function pathToParts(path: string): pathParts {
             }
 
             if (parts.find(part => part.type === 'rest')) {
-                throw new Error('rest part aoready exists');
+                throw new Error('rest part already exists');
             }
 
             parts.push({
