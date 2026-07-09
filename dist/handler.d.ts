@@ -5,6 +5,15 @@ import type { file } from "./node";
 export declare const orNext: "orNext" & {
     __orNext: symbol;
 };
+type pathParts = ({
+    type: 'literal';
+    value: string;
+} | {
+    type: 'param';
+    name: string;
+} | {
+    type: 'rest';
+})[];
 export declare function match<methods extends '*' | httpMethod | readonly httpMethod[], path extends string, testMethod extends httpMethod, testPath extends `/${string}`>(methods: methods, path: path, testMethod: testMethod, testPath: testPath): matchRequest<methods, path, testMethod, testPath>;
 type orHandlerReturn = LrResponse<orResponseObject> | typeof orNext;
 export type orHandlerCallback<method extends httpMethod, path extends `/${string}`, params extends Record<string, any>, // any, because it can be transformed with zod
@@ -38,6 +47,7 @@ export declare class LrHandler<methods extends '*' | httpMethod | readonly httpM
     path: path;
     validations: validations;
     callback: callback;
+    pathParts: pathParts;
     constructor(methods: methods, path: path, validations: validations, callback: callback);
     match<testMethod extends httpMethod, testPath extends `/${string}`>(method: testMethod, path: testPath): matchRequest<methods, path, testMethod, testPath>;
     execute(pathPrefix: string, req: orRequest<methodsDefinitionToMethods<methods>, pathDefinitionToType<path>>): Promise<Awaited<ReturnType<callback>> | (validations extends {

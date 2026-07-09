@@ -19,7 +19,7 @@ function pathToParts(path) {
                 throw new Error('* path part must be last');
             }
             if (parts.find(part => part.type === 'rest')) {
-                throw new Error('rest part aoready exists');
+                throw new Error('rest part already exists');
             }
             parts.push({
                 type: 'rest',
@@ -28,7 +28,7 @@ function pathToParts(path) {
         else if (part.startsWith(':')) {
             const name = part.slice(1);
             if (parts.find(part => part.type === 'param' && part.name === name)) {
-                throw new Error(`Param ${name} aoready exists`);
+                throw new Error(`Param ${name} already exists`);
             }
             if (name.trim().length === 0) {
                 throw new Error('Param name cannot be empty');
@@ -153,6 +153,7 @@ export class LrHandler {
     path;
     validations;
     callback;
+    pathParts;
     constructor(methods, path, validations, callback) {
         if (methods === '*') { }
         else if (Array.isArray(methods) && methods.every(method => httpMethods.includes(method))) { }
@@ -160,8 +161,7 @@ export class LrHandler {
         else {
             throw new Error(`Invalid methods: ${methods}`);
         }
-        // to assert path is valid
-        pathToParts(path);
+        this.pathParts = pathToParts(path);
         if (validations !== null) {
             if (typeof validations !== 'object') {
                 throw new Error(`Invalid validations: ${validations}`);
