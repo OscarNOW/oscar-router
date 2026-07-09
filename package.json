@@ -4,8 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "bun --watch idea.ts",
-    "t": "bun test && tsc --noEmit",
-    "b": "bun t && tsc -p tsconfig.build.json"
+    "b": "bun removeDist && bun test && tsc --noEmit && tsc -p tsconfig.build.json"
   },
   "devDependencies": {
     "@types/busboy": "^1.5.4",
