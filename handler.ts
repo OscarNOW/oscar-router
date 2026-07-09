@@ -19,6 +19,10 @@ type pathParts = ({
 })[];
 
 function pathToParts(path: string): pathParts {
+    if (typeof path !== 'string') {
+        throw new Error(`Path must be a string, got ${path} (${typeof path})`);
+    }
+
     if (!path.startsWith('/')) {
         throw new Error(`Path must start with /, got ${path}`);
     }
