@@ -51,7 +51,7 @@ function pathToParts(path: string): pathParts {
             const name = part.slice(1);
 
             if (parts.find(part => part.type === 'param' && part.name === name)) {
-                throw new Error(`Param ${name} aoready exists`);
+                throw new Error(`Param ${name} already exists`);
             }
 
             if (name.trim().length === 0) {
