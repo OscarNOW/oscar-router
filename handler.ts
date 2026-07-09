@@ -255,6 +255,8 @@ export class LrHandler<
     validations: validations;
     callback: callback;
 
+    pathParts: pathParts;
+
     constructor(methods: methods, path: path, validations: validations, callback: callback) {
 
         if (methods === '*') { }
@@ -264,8 +266,7 @@ export class LrHandler<
             throw new Error(`Invalid methods: ${methods}`);
         }
 
-        // to assert path is valid
-        pathToParts(path);
+        this.pathParts = pathToParts(path);
 
         if (validations !== null) {
             if (typeof validations !== 'object') {
