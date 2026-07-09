@@ -12,6 +12,8 @@
         "*.ts"
     ],
     "exclude": [
-        "*.test.ts"
+        "*.test.ts",
+        "removeDist.ts",
+        "idea.ts"
     ]
 }
