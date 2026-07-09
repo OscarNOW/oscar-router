@@ -1294,7 +1294,7 @@ describe('edge cases: route definitions', () => {
     test('rejects duplicate and unsafe param names', () => {
         expect(() => orHandler(['GET'], '/items/:id/:id', null, () => {
             return orResponse();
-        })).toThrow('Param id aoready exists');
+        })).toThrow('Param id already exists');
 
         expect(() => orHandler(['GET'], '/items/:__proto__', null, () => {
             return orResponse();
