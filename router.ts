@@ -327,35 +327,6 @@ export type orRouterRequirements<
         simplifyRequirements<routerRequirementsInternal<pathPrefix, handlers, testMethod, testPath>>
     ) : never;
 
-type routerHandlerRoute<
-    pathPrefix extends '' | `/${string}`,
-    handler extends generalHandlerOrRouter,
-> =
-    handler extends LrHandler<infer methods, infer path, any, any>
-    ? (
-        [methods, `${pathPrefix}${path}`]
-    ) :
-    handler extends LrRouter<infer routerPathPrefix, infer routerHandlers>
-    ? (
-        routerRoutesInternal<`${pathPrefix}${routerPathPrefix}`, routerHandlers>
-    ) : never
-    ;
-
-type routerRoutesInternal<
-    pathPrefix extends '' | `/${string}`,
-    handlers extends readonly any[], // can't be typed better here
-> =
-    routerHandlerRoute<`${pathPrefix}`, handlers[number]>
-    ;
-
-export type orRouterRoutes<
-    router extends LrRouter<'' | `/${string}`, readonly generalHandlerOrRouter[]>
-> =
-    router extends LrRouter<infer pathPrefix, infer handlers>
-    ? (
-        routerRoutesInternal<pathPrefix, handlers>
-    ) : never;
-
 export function orRouter<pathPrefix extends '' | `/${string}`, handlers extends readonly generalHandlerOrRouter[]>(pathPrefix: pathPrefix, handlers: handlers): LrRouter<pathPrefix, handlers> {
     return new LrRouter(pathPrefix, handlers);
 }
