@@ -153,7 +153,6 @@ export class LrHandler {
     path;
     validations;
     callback;
-    pathParts;
     constructor(methods, path, validations, callback) {
         if (methods === '*') { }
         else if (Array.isArray(methods) && methods.every(method => httpMethods.includes(method))) { }
@@ -161,7 +160,8 @@ export class LrHandler {
         else {
             throw new Error(`Invalid methods: ${methods}`);
         }
-        this.pathParts = pathToParts(path);
+        // to assert path is valid
+        pathToParts(path);
         if (validations !== null) {
             if (typeof validations !== 'object') {
                 throw new Error(`Invalid validations: ${validations}`);

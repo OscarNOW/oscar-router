@@ -48,7 +48,6 @@ export declare class LrHandler<methods extends '*' | httpMethod | readonly httpM
     path: path;
     validations: validations;
     callback: callback;
-    pathParts: pathParts;
     constructor(methods: methods, path: path, validations: validations, callback: callback);
     match<testMethod extends httpMethod, testPath extends `/${string}`>(method: testMethod, path: testPath): matchRequest<methods, path, testMethod, testPath>;
     execute(pathPrefix: string, req: orRequest<methodsDefinitionToMethods<methods>, pathDefinitionToType<path>>): Promise<Awaited<ReturnType<callback>> | (validations extends {
