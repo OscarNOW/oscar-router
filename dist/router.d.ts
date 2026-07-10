@@ -54,6 +54,12 @@ testMethod extends httpMethod, testPath extends `/${string}`> = handlers extends
     files: {};
 });
 export type orRouterRequirements<router extends LrRouter<'' | `/${string}`, readonly generalHandlerOrRouter[]>, testMethod extends httpMethod, testPath extends `/${string}`> = router extends LrRouter<infer pathPrefix, infer handlers> ? (simplifyRequirements<routerRequirementsInternal<pathPrefix, handlers, testMethod, testPath>>) : never;
+type routerHandlerRoute<pathPrefix extends '' | `/${string}`, handler extends generalHandlerOrRouter> = handler extends LrHandler<infer methods, infer path, any, any> ? ([
+    methods,
+    `${pathPrefix}${path}`
+]) : handler extends LrRouter<infer routerPathPrefix, infer routerHandlers> ? (routerRoutesInternal<`${pathPrefix}${routerPathPrefix}`, routerHandlers>) : never;
+type routerRoutesInternal<pathPrefix extends '' | `/${string}`, handlers extends readonly any[]> = routerHandlerRoute<`${pathPrefix}`, handlers[number]>;
+export type orRouterRoutes<router extends LrRouter<'' | `/${string}`, readonly generalHandlerOrRouter[]>> = router extends LrRouter<infer pathPrefix, infer handlers> ? (routerRoutesInternal<pathPrefix, handlers>) : never;
 export declare function orRouter<pathPrefix extends '' | `/${string}`, handlers extends readonly generalHandlerOrRouter[]>(pathPrefix: pathPrefix, handlers: handlers): LrRouter<pathPrefix, handlers>;
 export {};
 //# sourceMappingURL=router.d.ts.map

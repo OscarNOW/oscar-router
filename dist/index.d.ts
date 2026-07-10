@@ -5,8 +5,8 @@ export type { responseCookieOptions, httpMethod, LrResponse, orResponseObject } 
 export { defaultResponseCookieOptions, orResponse, httpMethods } from "./response";
 export type { orGeneralLrHandler, orValidationErrors } from "./handler";
 export { orNext, orHandler, match, pathToParts } from "./handler";
-export type { orRouterReturn, orRouterRequirements, orGeneralRouterMatch, orGeneralHandlerMatch, orGeneralRouterMatchReturn } from "./router";
+export type { orRouterReturn, orRouterRequirements, orGeneralRouterMatch, orGeneralHandlerMatch, orGeneralRouterMatchReturn, orRouterRoutes } from "./router";
 export { orRouter } from "./router";
-export type { orAppReturn, orAppRequirements } from "./app";
+export type { orAppReturn, orAppRequirements, orAppRoutes } from "./app";
 export { orApp } from "./app";
 //# sourceMappingURL=index.d.ts.map
