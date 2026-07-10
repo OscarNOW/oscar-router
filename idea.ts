@@ -1,7 +1,7 @@
 // © 2026 Oscar Knap - Alle rechten voorbehouden
 
 import { orHandler, orApp, orRouter, orNext, orResponse, orFileSchema } from ".";
-import type { orRouterReturn, orRouterRequirements, orAppReturn, orAppRequirements, LrResponse } from ".";
+import type { orRouterReturn, orRouterRequirements, orAppReturn, orAppRequirements, LrResponse, orRouterRoutes } from ".";
 import { z } from 'zod';
 
 const handler1 = orHandler('*', '/foo/*', {
@@ -59,12 +59,13 @@ const handler2 = orHandler('*', '/*', {
     return orResponse().status(500).json({ success: false } as const);
 });
 
-const router = orRouter('', [
+const router = orRouter('/abc', [
     handler1,
-    // handler2,
+    handler2,
 ] as const);
 
 type c = orRouterReturn<typeof router, 'GET', '/foo/hi'>;
+type d = orRouterRoutes<typeof router>;
 
 const app = orApp(router, {
     errorResponse: orResponse().status(500).json({ success: false } as const),
