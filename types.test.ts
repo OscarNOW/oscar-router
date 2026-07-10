@@ -11,6 +11,7 @@ import {
     type orRouterReturn, type orAppReturn,
     type orRouterRequirements,
     type orResponseObject,
+    type orRouterRoutes, type orAppRoutes,
 } from ".";
 import type { orAppRequirements } from "./app";
 import type { file } from "./node";
@@ -675,4 +676,30 @@ test("handler with files validation types req.files", () => {
 test("orFileSchema is exported from library", () => {
     type Module = typeof import(".");
     expectTypeOf<Module>().toExtend<{ orFileSchema: z.ZodType }>();
+});
+// ─── Route type extraction ─────────────────────────────────────────────────
+
+const routeTypesRouter = orRouter("/api", [
+    orHandler("GET", "/users", null, () => orResponse().json({ users: [] })),
+    orHandler(["POST", "PUT"] as const, "/users/:id", null, () => orResponse().status(204)),
+    orRouter("/admin", [
+        orHandler("*", "/stats", null, () => orResponse().json({ stats: true })),
+    ] as const),
+] as const);
+
+test("orRouterRoutes extracts methods and fully-prefixed paths from nested routers", () => {
+    expectTypeOf<orRouterRoutes<typeof routeTypesRouter>>().toEqualTypeOf<
+        | ["GET", "/api/users"]
+        | [readonly ["POST", "PUT"], "/api/users/:id"]
+        | ["*", "/api/admin/stats"]
+    >();
+});
+
+test("orAppRoutes exposes the routes of its router", () => {
+    const app = orApp(routeTypesRouter, {
+        errorResponse: orResponse().status(500).json({ error: true } as const),
+        noHandlerResponse: () => orResponse().status(404).json({ error: "not found" } as const),
+    });
+
+    expectTypeOf<orAppRoutes<typeof app>>().toEqualTypeOf<orRouterRoutes<typeof routeTypesRouter>>();
 });
