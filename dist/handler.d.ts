@@ -14,6 +14,7 @@ type pathParts = ({
 } | {
     type: 'rest';
 })[];
+export declare function pathToParts(path: string): pathParts;
 export declare function match<methods extends '*' | httpMethod | readonly httpMethod[], path extends string, testMethod extends httpMethod, testPath extends `/${string}`>(methods: methods, path: path, testMethod: testMethod, testPath: testPath): matchRequest<methods, path, testMethod, testPath>;
 type orHandlerReturn = LrResponse<orResponseObject> | typeof orNext;
 export type orHandlerCallback<method extends httpMethod, path extends `/${string}`, params extends Record<string, any>, // any, because it can be transformed with zod

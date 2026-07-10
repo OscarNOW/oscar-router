@@ -18,7 +18,7 @@ type pathParts = ({
     type: 'rest';
 })[];
 
-function pathToParts(path: string): pathParts {
+export function pathToParts(path: string): pathParts {
     if (typeof path !== 'string') {
         throw new Error(`Path must be a string, got ${path} (${typeof path})`);
     }
