@@ -7,7 +7,7 @@ import { LrRouter } from "./router";
 
 import type { canRouterCallNext, orRequest } from "./types";
 import type { orResponseObject, responseCookieOptions, responseWithCookies, responseWithHeaders, httpMethod } from "./response";
-import type { generalHandlerOrRouter, orRouterRequirements, orRouterReturn, orRouterRoutes } from "./router";
+import type { generalHandlerOrRouter, orRouterRequirements, orRouterReturn } from "./router";
 
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 
@@ -262,19 +262,6 @@ export type orAppRequirements<
     testPath extends `/${string}`
 > =
     orRouterRequirements<app['router'], testMethod, testPath>;
-
-export type orAppRoutes<
-    app extends LrApp<
-        '' | `/${string}`,
-        readonly generalHandlerOrRouter[],
-        LrResponse<orResponseObject>,
-        noHandlerResponseFunction,
-        generalErrorResponseFunction | undefined,
-        generalAddResponseHeaders | undefined,
-        generalAddResponseCookies | undefined
-    >
-> =
-    orRouterRoutes<app['router']>;
 
 export function orApp<
     pathPrefix extends '' | `/${string}`,

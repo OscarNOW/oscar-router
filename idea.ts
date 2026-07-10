@@ -1,7 +1,7 @@
 // © 2026 Oscar Knap - Alle rechten voorbehouden
 
 import { orHandler, orApp, orRouter, orNext, orResponse, orFileSchema } from ".";
-import type { orRouterReturn, orRouterRequirements, orAppReturn, orAppRequirements, LrResponse, orRouterRoutes, orAppRoutes } from ".";
+import type { orRouterReturn, orRouterRequirements, orAppReturn, orAppRequirements, LrResponse, orRouterRoutes } from ".";
 import { z } from 'zod';
 
 const handler1 = orHandler('*', '/foo/*', {
@@ -89,6 +89,5 @@ const app = orApp(router, {
 
 type a = orAppReturn<typeof app, 'GET', '/foo/hi'>;
 type b = orAppRequirements<typeof app, 'GET', '/foo/hi'>;
-type e = orAppRoutes<typeof app>;
 
 // const server = app.createServer();

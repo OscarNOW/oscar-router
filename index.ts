@@ -14,5 +14,5 @@ export { orNext, orHandler, match, pathToParts } from "./handler";
 export type { orRouterReturn, orRouterRequirements, orGeneralRouterMatch, orGeneralHandlerMatch, orGeneralRouterMatchReturn, orRouterRoutes } from "./router";
 export { orRouter } from "./router";
 
-export type { orAppReturn, orAppRequirements, orAppRoutes } from "./app";
+export type { orAppReturn, orAppRequirements } from "./app";
 export { orApp } from "./app";
