@@ -39,7 +39,7 @@ body> = {
 export type simplify<T> = T extends object ? {
     [K in keyof T]: T[K];
 } : T;
-export type simplifyRequirements<T> = T extends file ? unknown : (T extends object ? {
+export type simplifyRequirements<T> = T extends file ? unknown : T extends string | number | boolean | bigint | symbol ? T : (T extends object ? {
     [K in keyof T]: simplifyRequirements<T[K]>;
 } : T);
 type partMatchPaths<definitionPart extends string, testPart extends string> = definitionPart extends `:${string}` ? (testPart extends '' ? false : true) : definitionPart extends testPart ? true : false;
