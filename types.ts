@@ -57,6 +57,7 @@ export type simplify<T> =
 
 export type simplifyRequirements<T> =
     T extends file ? unknown
+    : T extends string | number | boolean | bigint | symbol ? T
     : (
         T extends object
         ? { [K in keyof T]: simplifyRequirements<T[K]> }
