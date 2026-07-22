@@ -13,7 +13,7 @@ type generalAddResponseCookies = (req: orRequest<httpMethod, `/${string}`>, res:
 } & Partial<responseCookieOptions>> | Promise<Record<string, {
     value: string;
 } & Partial<responseCookieOptions>>>;
-declare class LrApp<pathPrefix extends '' | `/${string}`, handlers extends readonly generalHandlerOrRouter[], errorResponse extends LrResponse<orResponseObject>, noHandlerResponse extends noHandlerResponseFunction, errorResponseFunction extends generalErrorResponseFunction | undefined, addResponseHeaders extends generalAddResponseHeaders | undefined, addResponseCookies extends generalAddResponseCookies | undefined> {
+declare class LrApp<const pathPrefix extends '' | `/${string}`, const handlers extends readonly generalHandlerOrRouter[], const errorResponse extends LrResponse<orResponseObject>, const noHandlerResponse extends noHandlerResponseFunction, const errorResponseFunction extends generalErrorResponseFunction | undefined, const addResponseHeaders extends generalAddResponseHeaders | undefined, const addResponseCookies extends generalAddResponseCookies | undefined> {
     router: LrRouter<pathPrefix, handlers>;
     errorResponse: errorResponse;
     errorResponseFunction: errorResponseFunction;
@@ -21,7 +21,7 @@ declare class LrApp<pathPrefix extends '' | `/${string}`, handlers extends reado
     addResponseHeaders: addResponseHeaders;
     addResponseCookies: addResponseCookies;
     constructor(router: LrRouter<pathPrefix, handlers>, errorResponse: errorResponse, noHandlerResponse: noHandlerResponse, errorResponseFunction: errorResponseFunction, addResponseHeaders: addResponseHeaders, addResponseCookies: addResponseCookies);
-    execute<testMethod extends httpMethod, testPath extends `/${string}`>(req: orRequest<testMethod, testPath>): Promise<orAppReturn<this, testMethod, testPath>>;
+    execute<const testMethod extends httpMethod, const testPath extends `/${string}`>(req: orRequest<testMethod, testPath>): Promise<orAppReturn<this, testMethod, testPath>>;
     nodeExecute(nodeReq: IncomingMessage, nodeRes: ServerResponse): Promise<void>;
     createServer(): Server;
 }
@@ -32,7 +32,7 @@ type responseCookiesWrapper<addResponseCookies extends generalAddResponseCookies
 type responseWrapper<addResponseHeaders extends generalAddResponseHeaders | undefined, addResponseCookies extends generalAddResponseCookies | undefined, response extends LrResponse<orResponseObject>> = response extends LrResponse<infer responseObject> ? LrResponse<responseHeadersWrapper<addResponseHeaders, responseCookiesWrapper<addResponseCookies, responseObject>>> : never;
 export type orAppReturn<app extends LrApp<'' | `/${string}`, readonly generalHandlerOrRouter[], LrResponse<orResponseObject>, noHandlerResponseFunction, generalErrorResponseFunction | undefined, generalAddResponseHeaders | undefined, generalAddResponseCookies | undefined>, testMethod extends httpMethod, testPath extends `/${string}`> = app extends LrApp<infer pathPrefix, infer handlers, infer errorResponse, infer noHandlerResponse, infer errorResponseFunction, infer addResponseHeaders, infer addResponseCookies> ? (responseWrapper<addResponseHeaders, addResponseCookies, Exclude<orRouterReturn<LrRouter<pathPrefix, handlers>, testMethod, testPath>, typeof orNext>>['response'] | responseWrapper<addResponseHeaders, addResponseCookies, (errorResponseFunction extends (...args: any[]) => infer returnErrorResponseFunction ? (Awaited<returnErrorResponseFunction> extends LrResponse<orResponseObject> ? Awaited<returnErrorResponseFunction> : never) : never)>['response'] | responseWrapper<addResponseHeaders, addResponseCookies, (canRouterCallNext<pathPrefix, handlers, testMethod, testPath> extends true ? Awaited<ReturnType<noHandlerResponse>> : never)>['response'] | errorResponse['response']) : never;
 export type orAppRequirements<app extends LrApp<'' | `/${string}`, readonly generalHandlerOrRouter[], LrResponse<orResponseObject>, noHandlerResponseFunction, generalErrorResponseFunction | undefined, generalAddResponseHeaders | undefined, generalAddResponseCookies | undefined>, testMethod extends httpMethod, testPath extends `/${string}`> = orRouterRequirements<app['router'], testMethod, testPath>;
-export declare function orApp<pathPrefix extends '' | `/${string}`, handlers extends readonly generalHandlerOrRouter[], options extends {
+export declare function orApp<const pathPrefix extends '' | `/${string}`, const handlers extends readonly generalHandlerOrRouter[], const options extends {
     errorResponse: LrResponse<orResponseObject>;
     noHandlerResponse: noHandlerResponseFunction;
     errorResponseFunction?: generalErrorResponseFunction;

@@ -76,20 +76,20 @@ export type orResponseObject = {
     headers: Record<string, string>;
     cookies: Record<string, responseCookie>;
 };
-export declare class LrResponse<response extends orResponseObject> {
+export declare class LrResponse<const response extends orResponseObject> {
     response: response;
     constructor(response: response);
-    status<status extends number, statusMessage extends string | undefined = undefined>(status: status, statusMessage?: statusMessage): LrResponse<simplify<{
+    status<const status extends number, const statusMessage extends string | undefined = undefined>(status: status, statusMessage?: statusMessage): LrResponse<simplify<{
         status: status;
         statusMessage: statusMessage extends undefined ? (status extends keyof typeof defaultStatusMessages ? (typeof defaultStatusMessages)[status] : '') : statusMessage;
     } & Omit<response, 'status' | 'statusMessage'>>>;
-    header<key extends string, value extends string>(key: key, value: value): LrResponse<simplify<Omit<response, 'headers'> & {
+    header<const key extends string, const value extends string>(key: key, value: value): LrResponse<simplify<Omit<response, 'headers'> & {
         headers: simplify<Omit<response['headers'], key> & {
             [x in key]: value;
         }>;
     }>>;
-    headers<headers extends Record<string, string>>(headers: headers): LrResponse<responseWithHeaders<response, headers>>;
-    json<data extends jsonStringifyable>(data: data): LrResponse<simplify<Omit<response, 'headers' | 'body'> & {
+    headers<const headers extends Record<string, string>>(headers: headers): LrResponse<responseWithHeaders<response, headers>>;
+    json<const data extends jsonStringifyable>(data: data): LrResponse<simplify<Omit<response, 'headers' | 'body'> & {
         headers: simplify<Omit<response['headers'], 'Content-Type'> & {
             'Content-Type': 'application/json; charset=utf-8';
         }>;
@@ -98,7 +98,7 @@ export declare class LrResponse<response extends orResponseObject> {
             body: data;
         };
     }>>;
-    text<text extends string>(text: text): LrResponse<simplify<Omit<response, 'headers' | 'body'> & {
+    text<const text extends string>(text: text): LrResponse<simplify<Omit<response, 'headers' | 'body'> & {
         headers: simplify<Omit<response['headers'], 'Content-Type'> & {
             'Content-Type': 'text/plain; charset=utf-8';
         }>;
@@ -107,7 +107,7 @@ export declare class LrResponse<response extends orResponseObject> {
             body: text;
         };
     }>>;
-    html<html extends string>(html: html): LrResponse<simplify<Omit<response, 'headers' | 'body'> & {
+    html<const html extends string>(html: html): LrResponse<simplify<Omit<response, 'headers' | 'body'> & {
         headers: simplify<Omit<response['headers'], 'Content-Type'> & {
             'Content-Type': 'text/html; charset=utf-8';
         }>;
@@ -116,7 +116,7 @@ export declare class LrResponse<response extends orResponseObject> {
             body: html;
         };
     }>>;
-    buffer<buffer extends Buffer>(buffer: buffer): LrResponse<simplify<Omit<response, 'headers' | 'body'> & {
+    buffer<const buffer extends Buffer>(buffer: buffer): LrResponse<simplify<Omit<response, 'headers' | 'body'> & {
         headers: simplify<Omit<response['headers'], 'Content-Type'> & {
             'Content-Type': 'application/octet-stream';
         }>;
@@ -125,12 +125,12 @@ export declare class LrResponse<response extends orResponseObject> {
             body: buffer;
         };
     }>>;
-    type<type extends string>(type: type): LrResponse<simplify<Omit<response, 'headers'> & {
+    type<const type extends string>(type: type): LrResponse<simplify<Omit<response, 'headers'> & {
         headers: simplify<Omit<response['headers'], 'Content-Type'> & {
             'Content-Type': type;
         }>;
     }>>;
-    redirect<url extends string>(url: url): LrResponse<simplify<{
+    redirect<const url extends string>(url: url): LrResponse<simplify<{
         status: 307;
         statusMessage: (typeof defaultStatusMessages)[307];
         headers: simplify<Omit<response['headers'], 'Location' | 'Content-Type'> & {
@@ -142,7 +142,7 @@ export declare class LrResponse<response extends orResponseObject> {
             body: '';
         };
     } & Omit<response, 'status' | 'statusMessage' | 'headers' | 'body'>>>;
-    permanentRedirect<url extends string>(url: url): LrResponse<simplify<{
+    permanentRedirect<const url extends string>(url: url): LrResponse<simplify<{
         status: 308;
         statusMessage: (typeof defaultStatusMessages)[308];
         headers: simplify<Omit<response['headers'], 'Location' | 'Content-Type'> & {
@@ -154,7 +154,7 @@ export declare class LrResponse<response extends orResponseObject> {
             body: '';
         };
     } & Omit<response, 'status' | 'statusMessage' | 'headers' | 'body'>>>;
-    cookie<name extends string, value extends string, options extends Partial<responseCookieOptions> | undefined = undefined>(name: name, value: value, options?: options): LrResponse<simplify<Omit<response, 'cookie'> & {
+    cookie<const name extends string, const value extends string, const options extends Partial<responseCookieOptions> | undefined = undefined>(name: name, value: value, options?: options): LrResponse<simplify<Omit<response, 'cookie'> & {
         cookies: simplify<Omit<response['cookies'], name> & {
             [key in name]: {
                 value: value;
@@ -162,7 +162,7 @@ export declare class LrResponse<response extends orResponseObject> {
             };
         }>;
     }>>;
-    cookies<cookies extends Record<string, {
+    cookies<const cookies extends Record<string, {
         value: string;
     } & Partial<responseCookieOptions>>>(cookies: cookies): LrResponse<responseWithCookies<response, cookies>>;
 }

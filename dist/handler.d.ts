@@ -15,7 +15,7 @@ type pathParts = ({
     type: 'rest';
 })[];
 export declare function pathToParts(path: string): pathParts;
-export declare function match<methods extends '*' | httpMethod | readonly httpMethod[], path extends string, testMethod extends httpMethod, testPath extends `/${string}`>(methods: methods, path: path, testMethod: testMethod, testPath: testPath): matchRequest<methods, path, testMethod, testPath>;
+export declare function match<const methods extends '*' | httpMethod | readonly httpMethod[], const path extends string, const testMethod extends httpMethod, const testPath extends `/${string}`>(methods: methods, path: path, testMethod: testMethod, testPath: testPath): matchRequest<methods, path, testMethod, testPath>;
 type orHandlerReturn = LrResponse<orResponseObject> | typeof orNext;
 export type orHandlerCallback<method extends httpMethod, path extends `/${string}`, params extends Record<string, any>, // any, because it can be transformed with zod
 query extends Record<string, any>, // any, because it can be transformed with zod
@@ -35,7 +35,7 @@ export type orValidationErrors = {
     paramsError: z.ZodError | null;
 };
 export type orGeneralLrHandler = LrHandler<'*' | httpMethod | readonly httpMethod[], `/${string}`, generalValidations<'*' | httpMethod | readonly httpMethod[], `/${string}`>, orHandlerCallback<httpMethod, `/${string}`, Record<string, any>, Record<string, any>, Record<string, any>, unknown>>;
-export declare class LrHandler<methods extends '*' | httpMethod | readonly httpMethod[], path extends string, validations extends generalValidations<methods, path>, callback extends orHandlerCallback<methodsDefinitionToMethods<methods>, pathDefinitionToType<path>, validations extends {
+export declare class LrHandler<const methods extends '*' | httpMethod | readonly httpMethod[], const path extends string, const validations extends generalValidations<methods, path>, const callback extends orHandlerCallback<methodsDefinitionToMethods<methods>, pathDefinitionToType<path>, validations extends {
     params: any;
 } ? z.output<validations['params']> : pathDefinitionToParams<path>, validations extends {
     query: any;
@@ -49,12 +49,12 @@ export declare class LrHandler<methods extends '*' | httpMethod | readonly httpM
     validations: validations;
     callback: callback;
     constructor(methods: methods, path: path, validations: validations, callback: callback);
-    match<testMethod extends httpMethod, testPath extends `/${string}`>(method: testMethod, path: testPath): matchRequest<methods, path, testMethod, testPath>;
+    match<const testMethod extends httpMethod, const testPath extends `/${string}`>(method: testMethod, path: testPath): matchRequest<methods, path, testMethod, testPath>;
     execute(pathPrefix: string, req: orRequest<methodsDefinitionToMethods<methods>, pathDefinitionToType<path>>): Promise<Awaited<ReturnType<callback>> | (validations extends {
         failResponse: (...args: any[]) => infer returnFailResponse;
     } ? (Awaited<returnFailResponse>) : never)>;
 }
-export declare function orHandler<methods extends '*' | httpMethod | readonly httpMethod[], path extends `/${string}`, validations extends generalValidations<methods, path>, callback extends orHandlerCallback<methodsDefinitionToMethods<methods>, pathDefinitionToType<path>, validations extends {
+export declare function orHandler<const methods extends '*' | httpMethod | readonly httpMethod[], const path extends `/${string}`, const validations extends generalValidations<methods, path>, const callback extends orHandlerCallback<methodsDefinitionToMethods<methods>, pathDefinitionToType<path>, validations extends {
     params: any;
 } ? z.output<validations['params']> : pathDefinitionToParams<path>, validations extends {
     query: any;
