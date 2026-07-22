@@ -105,14 +105,14 @@ export type orResponseObject = {
     cookies: Record<string, responseCookie>;
 };
 
-export class LrResponse<response extends orResponseObject> {
+export class LrResponse<const response extends orResponseObject> {
     response: response;
 
     constructor(response: response) {
         this.response = response;
     }
 
-    status<status extends number, statusMessage extends string | undefined = undefined>(status: status, statusMessage?: statusMessage):
+    status<const status extends number, const statusMessage extends string | undefined = undefined>(status: status, statusMessage?: statusMessage):
         LrResponse<
             simplify<
                 {
@@ -135,7 +135,7 @@ export class LrResponse<response extends orResponseObject> {
         } as any);
     }
 
-    header<key extends string, value extends string>(key: key, value: value):
+    header<const key extends string, const value extends string>(key: key, value: value):
         LrResponse<
             simplify<
                 Omit<response, 'headers'>
@@ -153,7 +153,7 @@ export class LrResponse<response extends orResponseObject> {
         } as any);
     }
 
-    headers<headers extends Record<string, string>>(headers: headers):
+    headers<const headers extends Record<string, string>>(headers: headers):
         LrResponse<responseWithHeaders<response, headers>> {
         return new LrResponse({
             ...this.response,
@@ -164,7 +164,7 @@ export class LrResponse<response extends orResponseObject> {
         } as any);
     }
 
-    json<data extends jsonStringifyable>(data: data):
+    json<const data extends jsonStringifyable>(data: data):
         LrResponse<
             simplify<
                 Omit<response, 'headers' | 'body'>
@@ -187,7 +187,7 @@ export class LrResponse<response extends orResponseObject> {
         } as any);
     }
 
-    text<text extends string>(text: text):
+    text<const text extends string>(text: text):
         LrResponse<
             simplify<
                 Omit<response, 'headers' | 'body'>
@@ -210,7 +210,7 @@ export class LrResponse<response extends orResponseObject> {
         } as any);
     }
 
-    html<html extends string>(html: html):
+    html<const html extends string>(html: html):
         LrResponse<
             simplify<
                 Omit<response, 'headers' | 'body'>
@@ -233,7 +233,7 @@ export class LrResponse<response extends orResponseObject> {
         } as any);
     }
 
-    buffer<buffer extends Buffer>(buffer: buffer):
+    buffer<const buffer extends Buffer>(buffer: buffer):
         LrResponse<
             simplify<
                 Omit<response, 'headers' | 'body'>
@@ -256,7 +256,7 @@ export class LrResponse<response extends orResponseObject> {
         } as any);
     }
 
-    type<type extends string>(type: type):
+    type<const type extends string>(type: type):
         LrResponse<
             simplify<
                 Omit<response, 'headers'>
@@ -274,7 +274,7 @@ export class LrResponse<response extends orResponseObject> {
         } as any);
     }
 
-    redirect<url extends string>(url: url):
+    redirect<const url extends string>(url: url):
         LrResponse<
             simplify<
                 {
@@ -302,7 +302,7 @@ export class LrResponse<response extends orResponseObject> {
         } as any);
     }
 
-    permanentRedirect<url extends string>(url: url):
+    permanentRedirect<const url extends string>(url: url):
         LrResponse<
             simplify<
                 {
@@ -331,9 +331,9 @@ export class LrResponse<response extends orResponseObject> {
     }
 
     cookie<
-        name extends string,
-        value extends string,
-        options extends Partial<responseCookieOptions> | undefined = undefined
+        const name extends string,
+        const value extends string,
+        const options extends Partial<responseCookieOptions> | undefined = undefined
     >(name: name, value: value, options?: options):
         LrResponse<
             simplify<
@@ -372,7 +372,7 @@ export class LrResponse<response extends orResponseObject> {
     }
 
     cookies<
-        cookies extends Record<
+        const cookies extends Record<
             string,
             { value: string } & Partial<responseCookieOptions>
         >
@@ -412,5 +412,5 @@ export function orResponse() {
             body: ''
         },
         cookies: Object.create(null) as {}
-    } as const);
+    });
 }
