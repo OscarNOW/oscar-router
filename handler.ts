@@ -83,10 +83,10 @@ export function pathToParts(path: string): pathParts {
 }
 
 export function match<
-    methods extends '*' | httpMethod | readonly httpMethod[],
-    path extends string,
-    testMethod extends httpMethod,
-    testPath extends `/${string}`
+    const methods extends '*' | httpMethod | readonly httpMethod[],
+    const path extends string,
+    const testMethod extends httpMethod,
+    const testPath extends `/${string}`
 >(
     methods: methods,
     path: path,
@@ -238,10 +238,10 @@ export type orGeneralLrHandler = LrHandler<
 >;
 
 export class LrHandler<
-    methods extends '*' | httpMethod | readonly httpMethod[],
-    path extends string,
-    validations extends generalValidations<methods, path>,
-    callback extends orHandlerCallback<
+    const methods extends '*' | httpMethod | readonly httpMethod[],
+    const path extends string,
+    const validations extends generalValidations<methods, path>,
+    const callback extends orHandlerCallback<
         methodsDefinitionToMethods<methods>,
         pathDefinitionToType<path>,
         validations extends { params: any } ? z.output<validations['params']> : pathDefinitionToParams<path>,
@@ -287,7 +287,7 @@ export class LrHandler<
         this.callback = callback;
     }
 
-    match<testMethod extends httpMethod, testPath extends `/${string}`>(method: testMethod, path: testPath):
+    match<const testMethod extends httpMethod, const testPath extends `/${string}`>(method: testMethod, path: testPath):
         matchRequest<methods, path, testMethod, testPath> {
         return match(this.methods, this.path, method, path);
     }
@@ -368,10 +368,10 @@ export class LrHandler<
 };
 
 export function orHandler<
-    methods extends '*' | httpMethod | readonly httpMethod[],
-    path extends `/${string}`,
-    validations extends generalValidations<methods, path>,
-    callback extends orHandlerCallback<
+    const methods extends '*' | httpMethod | readonly httpMethod[],
+    const path extends `/${string}`,
+    const validations extends generalValidations<methods, path>,
+    const callback extends orHandlerCallback<
         methodsDefinitionToMethods<methods>,
         pathDefinitionToType<path>,
         validations extends { params: any } ? z.output<validations['params']> : pathDefinitionToParams<path>,

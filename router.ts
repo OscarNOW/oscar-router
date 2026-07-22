@@ -82,7 +82,7 @@ type routerMatchReturn<
 
 export type generalHandlerOrRouter = LrHandler<any, any, any, any> | LrRouter<any, any>;
 
-export class LrRouter<pathPrefix extends '' | `/${string}`, handlers extends readonly generalHandlerOrRouter[]> {
+export class LrRouter<const pathPrefix extends '' | `/${string}`, const handlers extends readonly generalHandlerOrRouter[]> {
     pathPrefix: pathPrefix;
     handlers: handlers;
 
@@ -110,7 +110,7 @@ export class LrRouter<pathPrefix extends '' | `/${string}`, handlers extends rea
         this.handlers = handlers;
     }
 
-    match<testMethod extends httpMethod, testPath extends `/${string}`>(method: testMethod, path: testPath):
+    match<const testMethod extends httpMethod, const testPath extends `/${string}`>(method: testMethod, path: testPath):
         routerMatchReturn<pathPrefix, handlers, testMethod, testPath> {
 
         return this.#matchInternal('', method, path) as unknown as routerMatchReturn<pathPrefix, handlers, testMethod, testPath>;
@@ -167,7 +167,7 @@ export class LrRouter<pathPrefix extends '' | `/${string}`, handlers extends rea
         };
     }
 
-    async execute<testMethod extends httpMethod, testPath extends `/${string}`>(req: orRequest<testMethod, testPath>): Promise<orRouterReturn<this, testMethod, testPath>> {
+    async execute<const testMethod extends httpMethod, const testPath extends `/${string}`>(req: orRequest<testMethod, testPath>): Promise<orRouterReturn<this, testMethod, testPath>> {
         const match = this.match(req.method, req.path);
 
         const response = await this.#executeInternal('', match, req);
@@ -327,6 +327,6 @@ export type orRouterRequirements<
         simplifyRequirements<routerRequirementsInternal<pathPrefix, handlers, testMethod, testPath>>
     ) : never;
 
-export function orRouter<pathPrefix extends '' | `/${string}`, handlers extends readonly generalHandlerOrRouter[]>(pathPrefix: pathPrefix, handlers: handlers): LrRouter<pathPrefix, handlers> {
+export function orRouter<const pathPrefix extends '' | `/${string}`, const handlers extends readonly generalHandlerOrRouter[]>(pathPrefix: pathPrefix, handlers: handlers): LrRouter<pathPrefix, handlers> {
     return new LrRouter(pathPrefix, handlers);
 }

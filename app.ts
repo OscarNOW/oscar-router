@@ -36,13 +36,13 @@ type generalAddResponseCookies =
         >;
 
 class LrApp<
-    pathPrefix extends '' | `/${string}`,
-    handlers extends readonly generalHandlerOrRouter[],
-    errorResponse extends LrResponse<orResponseObject>,
-    noHandlerResponse extends noHandlerResponseFunction,
-    errorResponseFunction extends generalErrorResponseFunction | undefined,
-    addResponseHeaders extends generalAddResponseHeaders | undefined,
-    addResponseCookies extends generalAddResponseCookies | undefined
+    const pathPrefix extends '' | `/${string}`,
+    const handlers extends readonly generalHandlerOrRouter[],
+    const errorResponse extends LrResponse<orResponseObject>,
+    const noHandlerResponse extends noHandlerResponseFunction,
+    const errorResponseFunction extends generalErrorResponseFunction | undefined,
+    const addResponseHeaders extends generalAddResponseHeaders | undefined,
+    const addResponseCookies extends generalAddResponseCookies | undefined
 > {
     router: LrRouter<pathPrefix, handlers>;
     errorResponse: errorResponse;
@@ -64,7 +64,7 @@ class LrApp<
         this.addResponseCookies = addResponseCookies;
     }
 
-    async execute<testMethod extends httpMethod, testPath extends `/${string}`>(req: orRequest<testMethod, testPath>): Promise<orAppReturn<this, testMethod, testPath>> {
+    async execute<const testMethod extends httpMethod, const testPath extends `/${string}`>(req: orRequest<testMethod, testPath>): Promise<orAppReturn<this, testMethod, testPath>> {
         try {
 
             let response: LrResponse<orResponseObject>;
@@ -264,9 +264,9 @@ export type orAppRequirements<
     orRouterRequirements<app['router'], testMethod, testPath>;
 
 export function orApp<
-    pathPrefix extends '' | `/${string}`,
-    handlers extends readonly generalHandlerOrRouter[],
-    options extends {
+    const pathPrefix extends '' | `/${string}`,
+    const handlers extends readonly generalHandlerOrRouter[],
+    const options extends {
         errorResponse: LrResponse<orResponseObject>;
         noHandlerResponse: noHandlerResponseFunction;
         errorResponseFunction?: generalErrorResponseFunction;
