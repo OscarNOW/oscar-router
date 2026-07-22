@@ -30,7 +30,7 @@ const handler1 = orHandler('*', '/foo/*', {
             // return orNext;
         }
 
-        return orResponse().status(400).json({ success: false } as const);
+        return orResponse().status(400).json({ success: false });
     }
 }, async req => {
     req.method;
@@ -56,18 +56,18 @@ const handler2 = orHandler('*', '/*', {
     // return orJson({ success: true });
     // return orStatus(500, orJson({ success: false }));
     // return orRedirect('/');
-    return orResponse().status(500).json({ success: false } as const);
+    return orResponse().status(500).json({ success: false });
 });
 
 const router = orRouter('', [
     handler1,
     // handler2,
-] as const);
+]);
 
 type c = orRouterReturn<typeof router, 'GET', '/foo/hi'>;
 
 const app = orApp(router, {
-    errorResponse: orResponse().status(500).json({ success: false } as const),
+    errorResponse: orResponse().status(500).json({ success: false }),
     // errorResponseFunction: () => orResponse().status(123),
     noHandlerResponse: (req) => {
         req.method;
@@ -76,14 +76,14 @@ const app = orApp(router, {
         req.body;
         req.query;
 
-        return orResponse().status(404).json({ success: false } as const);
+        return orResponse().status(404).json({ success: false });
     },
     addResponseHeaders: (req, res) => ({
         foo: 'bar'
-    } as const),
+    }),
     addResponseCookies: (req, res) => ({
         foo: { value: 'bar' }
-    } as const)
+    })
 });
 
 type a = orAppReturn<typeof app, 'GET', '/foo/hi'>;

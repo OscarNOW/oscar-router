@@ -87,7 +87,7 @@ test("router with non-matching method returns orNext", () => {
         orHandler("GET", "/only-get", null, () => {
             return orResponse().status(200).text("get");
         }),
-    ] as const);
+    ]);
     type Ret = orRouterReturn<typeof router, "POST", "/only-get">;
     type _isLrNext = Ret extends typeof orNext ? true : false;
     const _v: _isLrNext = true;
@@ -96,9 +96,9 @@ test("router with non-matching method returns orNext", () => {
 test("router with matching handler returns LrResponse", () => {
     const router = orRouter("", [
         orHandler("GET", "/hello", null, () => {
-            return orResponse().status(200).json({ message: "hello" } as const);
+            return orResponse().status(200).json({ message: "hello" });
         }),
-    ] as const);
+    ]);
     type Ret = orRouterReturn<typeof router, "GET", "/hello">;
     type _isLrNext = Ret extends typeof orNext ? true : false;
     const _a: _isLrNext = false;
@@ -111,10 +111,10 @@ test("router with matching handler returns LrResponse", () => {
 const edgeRouter = orRouter("", [
     orRouter("/foo", [
         orHandler("GET", "/:id", null, () => {
-            return orResponse().json({ reached: true } as const);
+            return orResponse().json({ reached: true });
         }),
-    ] as const),
-] as const);
+    ]),
+]);
 
 test("nested prefix /foo consumes full path -> empty :id, no match", () => {
     type Ret = orRouterReturn<typeof edgeRouter, "GET", "/foo">;
@@ -134,9 +134,9 @@ test("nested prefix /foo with extra path /foo/bar matches :id", () => {
 
 const rootParamRouter = orRouter("", [
     orHandler("GET", "/:id", null, () => {
-        return orResponse().json({ reached: true } as const);
+        return orResponse().json({ reached: true });
     }),
-] as const);
+]);
 
 test("root param /:id does NOT match path /", () => {
     type Ret = orRouterReturn<typeof rootParamRouter, "GET", "/">;
@@ -158,11 +158,11 @@ const deepEdgeRouter = orRouter("", [
     orRouter("/a", [
         orRouter("/b", [
             orHandler("GET", "/:id", null, () => {
-                return orResponse().json({ reached: true } as const);
+                return orResponse().json({ reached: true });
             }),
-        ] as const),
-    ] as const),
-] as const);
+        ]),
+    ]),
+]);
 
 test("deep nested prefix /a/b consumes full path, no match", () => {
     type Ret = orRouterReturn<typeof deepEdgeRouter, "GET", "/a/b">;
@@ -185,11 +185,11 @@ test("orApp with no match returns noHandlerResponse", () => {
         orHandler("GET", "/exists", null, () => {
             return orResponse().status(200).text("here");
         }),
-    ] as const);
+    ]);
 
     const app = orApp(router, {
-        errorResponse: orResponse().status(500).json({ error: true } as const),
-        noHandlerResponse: () => orResponse().status(404).json({ not: "found" } as const),
+        errorResponse: orResponse().status(500).json({ error: true }),
+        noHandlerResponse: () => orResponse().status(404).json({ not: "found" }),
     });
 
     type AppRet = orAppReturn<typeof app, "GET", "/nope">;
@@ -212,7 +212,7 @@ test("orRequest non-GET has isHead as false", () => {
 // ─── orResponse type inference ───
 
 test("orResponse.json sets Content-Type and body type", () => {
-    const res = orResponse().json({ message: "hello" } as const);
+    const res = orResponse().json({ message: "hello" });
     type BodyType = typeof res extends LrResponse<infer R> ? R["body"] : never;
     type _isJson = BodyType extends { type: "json"; body: { message: "hello" } } ? true : false;
     const _v: _isJson = true;
@@ -290,7 +290,7 @@ test("router with wildcard method matches any method", () => {
         orHandler("*", "/wild", null, () => {
             return orResponse().status(200).text("wild");
         }),
-    ] as const);
+    ]);
     type RetGet = orRouterReturn<typeof router, "GET", "/wild">;
     type _isResponse = RetGet extends LrResponse<any> ? true : false;
     const _a: _isResponse = true;
@@ -303,9 +303,9 @@ test("router with wildcard method matches any method", () => {
 
 const restRouter = orRouter("", [
     orHandler("GET", "/files/*", null, () => {
-        return orResponse().json({ type: "rest" } as const);
+        return orResponse().json({ type: "rest" });
     }),
-] as const);
+]);
 
 test("rest route matches extra path segments", () => {
     type Ret = orRouterReturn<typeof restRouter, "GET", "/files/a/b">;
@@ -324,9 +324,9 @@ test("rest route matches path with zero extra segments", () => {
 const fallthroughRouter = orRouter("", [
     orHandler("GET", "/chain", null, () => orNext),
     orHandler("GET", "/chain", null, () => {
-        return orResponse().json({ second: true } as const);
+        return orResponse().json({ second: true });
     }),
-] as const);
+]);
 
 test("router fallthrough: first handler returns orNext, second returns response", () => {
     type Ret = orRouterReturn<typeof fallthroughRouter, "GET", "/chain">;
@@ -341,7 +341,7 @@ test("router with matching method but non-matching path returns orNext", () => {
         orHandler("GET", "/only-this", null, () => {
             return orResponse().status(200).text("here");
         }),
-    ] as const);
+    ]);
     type Ret = orRouterReturn<typeof router, "GET", "/other">;
     type _isLrNext = Ret extends typeof orNext ? true : false;
     const _v: _isLrNext = true;
@@ -353,7 +353,7 @@ test("router with multiple handlers on different paths resolves correctly", () =
     const router = orRouter("", [
         orHandler("GET", "/a", null, () => orResponse().text("a")),
         orHandler("GET", "/b", null, () => orResponse().text("b")),
-    ] as const);
+    ]);
     type RetA = orRouterReturn<typeof router, "GET", "/a">;
     type _isResponseA = RetA extends LrResponse<any> ? true : false;
     const _a: _isResponseA = true;
@@ -366,9 +366,9 @@ test("router with multiple handlers on different paths resolves correctly", () =
 
 const prefixedRouter = orRouter("/api", [
     orHandler("GET", "/status", null, () => {
-        return orResponse().json({ ok: true } as const);
+        return orResponse().json({ ok: true });
     }),
-] as const);
+]);
 
 test("top-level router with /api prefix matches full path /api/status", () => {
     type Ret = orRouterReturn<typeof prefixedRouter, "GET", "/api/status">;
@@ -378,9 +378,9 @@ test("top-level router with /api prefix matches full path /api/status", () => {
 
 const showsRouter = orRouter("/shows", [
     orHandler("GET", "/", null, () => {
-        return orResponse().json({ ok: true } as const);
+        return orResponse().json({ ok: true });
     }),
-] as const);
+]);
 
 test("top-level router /shows with root handler matches path /shows", () => {
     type Ret = orRouterReturn<typeof showsRouter, "GET", "/shows">;
@@ -392,20 +392,20 @@ const tripleCookiesHandler = orHandler("GET", "/", {
     query: z.object({ session: z.string() }),
     failResponse: () => orResponse().status(400).text("fail"),
 }, () => {
-    return orResponse().json({ cookies: true } as const);
+    return orResponse().json({ cookies: true });
 });
 
 const tripleCookiesRouter = orRouter("/cookies", [
     tripleCookiesHandler,
-] as const);
+]);
 
 const tripleCookiesMiddleRouter = orRouter("", [
     tripleCookiesRouter,
-] as const);
+]);
 
 const tripleCookiesRootRouter = orRouter("", [
     tripleCookiesMiddleRouter,
-] as const);
+]);
 
 test("router -> router -> router /cookies -> handler GET / return type matches /cookies", () => {
     type Ret = orRouterReturn<typeof tripleCookiesRootRouter, "GET", "/cookies">;
@@ -454,10 +454,10 @@ test("top-level router with /api prefix does not match /status without prefix", 
 const boundaryRouter = orRouter("", [
     orRouter("/api", [
         orHandler("GET", "/status", null, () => {
-            return orResponse().json({ ok: true } as const);
+            return orResponse().json({ ok: true });
         }),
-    ] as const),
-] as const);
+    ]),
+]);
 
 test("nested /api prefix does not match /apiadmin/status at type level", () => {
     type Ret = orRouterReturn<typeof boundaryRouter, "GET", "/apiadmin/status">;
@@ -472,8 +472,8 @@ test("orRouterRequirements with body validation requires zod input", () => {
         orHandler("POST", "/validate", {
             body: z.object({ name: z.string() }),
             failResponse: () => orResponse().status(400).text("fail"),
-        }, () => orResponse().json({ ok: true } as const)),
-    ] as const);
+        }, () => orResponse().json({ ok: true })),
+    ]);
     type Reqs = orRouterRequirements<typeof router, "POST", "/validate">;
     type _hasName = Reqs extends { body: { name: string } } ? true : false;
     const _v: _hasName = true;
@@ -488,8 +488,8 @@ test("orRouterRequirements with files validation requires proper files type", ()
                 file: z.object({ name: z.string(), mimeType: z.string(), buffer: z.instanceof(Buffer) }),
             }),
             failResponse: () => orResponse().status(400).text("fail"),
-        }, () => orResponse().json({ ok: true } as const)),
-    ] as const);
+        }, () => orResponse().json({ ok: true })),
+    ]);
     type Reqs = orRouterRequirements<typeof router, "POST", "/upload">;
     type _hasFiles = Reqs extends { files: { file: unknown } } ? true : false;
     const _v: _hasFiles = true;
@@ -502,11 +502,11 @@ test("orAppRequirements with files validation requires proper files type", () =>
                 avatar: orFileSchema,
             }),
             failResponse: () => orResponse().status(400).text("fail"),
-        }, () => orResponse().json({ ok: true } as const)),
-    ] as const);
+        }, () => orResponse().json({ ok: true })),
+    ]);
     const app = orApp(router, {
-        errorResponse: orResponse().status(500).json({ error: true } as const),
-        noHandlerResponse: () => orResponse().status(404).json({ not: "found" } as const),
+        errorResponse: orResponse().status(500).json({ error: true }),
+        noHandlerResponse: () => orResponse().status(404).json({ not: "found" }),
     });
     type AppReqs = orAppRequirements<typeof app, "POST", "/app-upload">;
     type _hasFiles = AppReqs extends { files: { avatar: unknown } } ? true : false;
@@ -517,12 +517,12 @@ test("orAppRequirements with files validation requires proper files type", () =>
 
 test("orApp with addResponseHeaders includes header in return type", () => {
     const router = orRouter("", [
-        orHandler("GET", "/hooked", null, () => orResponse().json({ ok: true } as const)),
-    ] as const);
+        orHandler("GET", "/hooked", null, () => orResponse().json({ ok: true })),
+    ]);
 
     const app = orApp(router, {
-        errorResponse: orResponse().status(500).json({ error: true } as const),
-        noHandlerResponse: () => orResponse().status(404).json({ not: "found" } as const),
+        errorResponse: orResponse().status(500).json({ error: true }),
+        noHandlerResponse: () => orResponse().status(404).json({ not: "found" }),
         addResponseHeaders: async () => ({ "X-Hooked": "yes" }),
     });
 
@@ -535,12 +535,12 @@ test("orApp with addResponseHeaders includes header in return type", () => {
 
 test("orApp with addResponseCookies includes cookie in return type", () => {
     const router = orRouter("", [
-        orHandler("GET", "/cookies", null, () => orResponse().json({ ok: true } as const)),
-    ] as const);
+        orHandler("GET", "/cookies", null, () => orResponse().json({ ok: true })),
+    ]);
 
     const app = orApp(router, {
-        errorResponse: orResponse().status(500).json({ error: true } as const),
-        noHandlerResponse: () => orResponse().status(404).json({ not: "found" } as const),
+        errorResponse: orResponse().status(500).json({ error: true }),
+        noHandlerResponse: () => orResponse().status(404).json({ not: "found" }),
         addResponseCookies: async () => ({ hooked: { value: "yes" } }),
     });
 
@@ -554,12 +554,12 @@ test("orApp with errorResponseFunction includes error response in union", () => 
         orHandler("GET", "/boom", null, () => {
             throw new Error("fail");
         }),
-    ] as const);
+    ]);
 
     const app = orApp(router, {
-        errorResponse: orResponse().status(500).json({ fallback: true } as const),
-        noHandlerResponse: () => orResponse().status(404).json({ not: "found" } as const),
-        errorResponseFunction: async () => orResponse().status(503).json({ handled: true } as const),
+        errorResponse: orResponse().status(500).json({ fallback: true }),
+        noHandlerResponse: () => orResponse().status(404).json({ not: "found" }),
+        errorResponseFunction: async () => orResponse().status(503).json({ handled: true }),
     });
 
     type AppRet = orAppReturn<typeof app, "GET", "/boom">;
@@ -583,10 +583,10 @@ test("handler with array methods infers callback method type as union", () => {
 const multiSegmentPrefixRouter = orRouter("", [
     orRouter("/foo/bar", [
         orHandler("GET", "/:id", null, () => {
-            return orResponse().json({ id: "test" } as const);
+            return orResponse().json({ id: "test" });
         }),
-    ] as const),
-] as const);
+    ]),
+]);
 
 test("nested multi-segment prefix /foo/bar with param matches /foo/bar/baz", () => {
     type Ret = orRouterReturn<typeof multiSegmentPrefixRouter, "GET", "/foo/bar/baz">;
@@ -605,10 +605,10 @@ test("nested multi-segment prefix /foo/bar consumes full path, no match", () => 
 const nonRootFullPathRouter = orRouter("/api", [
     orRouter("/foo", [
         orHandler("GET", "/:id", null, () => {
-            return orResponse().json({ reached: true } as const);
+            return orResponse().json({ reached: true });
         }),
-    ] as const),
-] as const);
+    ]),
+]);
 
 test("non-root router /api with nested /foo consumes /api/foo, no match", () => {
     type Ret = orRouterReturn<typeof nonRootFullPathRouter, "GET", "/api/foo">;
@@ -627,11 +627,11 @@ test("non-root router /api with nested /foo matches /api/foo/bar", () => {
 const siblingFallthroughRouter = orRouter("", [
     orRouter("/api", [
         orHandler("GET", "/feature", null, () => orNext),
-    ] as const),
+    ]),
     orHandler("GET", "/api/feature", null, () => {
-        return orResponse().json({ fallback: true } as const);
+        return orResponse().json({ fallback: true });
     }),
-] as const);
+]);
 
 test("sibling route catches fallthrough when nested route returns orNext", () => {
     type Ret = orRouterReturn<typeof siblingFallthroughRouter, "GET", "/api/feature">;
@@ -642,7 +642,7 @@ test("sibling route catches fallthrough when nested route returns orNext", () =>
 // ─── orRouter with empty handlers returns orNext on any request ───
 
 test("router with empty handlers returns orNext for any request", () => {
-    const emptyRouter = orRouter("", [] as const);
+    const emptyRouter = orRouter("", []);
     type Ret = orRouterReturn<typeof emptyRouter, "GET", "/anything">;
     type _isLrNext = Ret extends typeof orNext ? true : false;
     const _v: _isLrNext = true;
@@ -668,7 +668,7 @@ test("handler with files validation types req.files", () => {
         failResponse: () => orResponse().status(400).text("fail"),
     }, req => {
         expectTypeOf<typeof req.files>().toExtend<{ file: { name: string } }>();
-        return orResponse().json({ ok: true } as const);
+        return orResponse().json({ ok: true });
     });
 });
 

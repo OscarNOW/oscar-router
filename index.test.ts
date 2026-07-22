@@ -25,8 +25,8 @@ function createTestServer(handlers: TestHandler | TestHandler[]): Promise<Server
 
 function createRouterServer(router: TestRouter): Promise<Server> {
     const app = orApp(router, {
-        errorResponse: orResponse().status(500).json({ ok: false } as const),
-        noHandlerResponse: () => orResponse().status(404).json({ ok: false } as const),
+        errorResponse: orResponse().status(500).json({ ok: false }),
+        noHandlerResponse: () => orResponse().status(404).json({ ok: false }),
     });
 
     return listenToApp(app);
@@ -263,7 +263,7 @@ describe('features: normal request handling', () => {
         const server = await createTestServer(orHandler(['POST'], '/json', null, req => {
             return orResponse().json({
                 body: req.body as any,
-            } as const);
+            });
         }));
 
         const response = await httpRequest(server, {
@@ -285,7 +285,7 @@ describe('features: normal request handling', () => {
         const server = await createTestServer(orHandler(['POST'], '/form', null, req => {
             return orResponse().json({
                 body: req.body as any,
-            } as const);
+            });
         }));
 
         const response = await httpRequest(server, {
@@ -315,7 +315,7 @@ describe('features: normal request handling', () => {
                 fileName: (req.files as any).upload.name,
                 fileType: (req.files as any).upload.mimeType,
                 fileText: (req.files as any).upload.buffer.toString('utf8'),
-            } as const);
+            });
         }));
 
         const response = await httpRequest(server, {
@@ -344,7 +344,7 @@ describe('features: normal request handling', () => {
         const server = await createTestServer(orHandler(['POST'], '/multipart-empty', null, req => {
             return orResponse().json({
                 empty: (req.body as any).empty,
-            } as const);
+            });
         }));
 
         const response = await httpRequest(server, {
@@ -366,7 +366,7 @@ describe('features: normal request handling', () => {
         const server = await createTestServer(orHandler(['POST'], '/raw', null, req => {
             return orResponse().json({
                 body: req.body as any,
-            } as const);
+            });
         }));
 
         const response = await httpRequest(server, {
@@ -386,7 +386,7 @@ describe('features: normal request handling', () => {
         const server = await createTestServer(orHandler(['GET'], '/', null, req => {
             return orResponse().json({
                 path: req.path,
-            } as const);
+            });
         }));
 
         const response = await httpRequest(server, {
@@ -399,7 +399,7 @@ describe('features: normal request handling', () => {
 
     test('returns the configured no-handler response for unmatched routes', async () => {
         const server = await createTestServer(orHandler(['GET'], '/known', null, () => {
-            return orResponse().json({ reached: true } as const);
+            return orResponse().json({ reached: true });
         }));
 
         const response = await httpRequest(server, {
@@ -415,10 +415,10 @@ describe('features: route matching and fallthrough', () => {
     test('matches handlers by HTTP method', async () => {
         const server = await createTestServer([
             orHandler(['GET'], '/resource', null, () => {
-                return orResponse().json({ method: 'GET' } as const);
+                return orResponse().json({ method: 'GET' });
             }),
             orHandler(['POST'], '/resource', null, () => {
-                return orResponse().json({ method: 'POST' } as const);
+                return orResponse().json({ method: 'POST' });
             }),
         ]);
 
@@ -438,7 +438,7 @@ describe('features: route matching and fallthrough', () => {
     test('supports all explicitly allowed HTTP methods', async () => {
         const methods = ['PUT', 'DELETE', 'PATCH', 'OPTIONS'] as const;
         const server = await createTestServer(methods.map(method => orHandler([method], '/resource', null, req => {
-            return orResponse().json({ method: req.method } as const);
+            return orResponse().json({ method: req.method });
         })));
 
         for (const method of methods) {
@@ -456,7 +456,7 @@ describe('features: route matching and fallthrough', () => {
         let handlerReached = false;
         const server = await createTestServer(orHandler('*', '/head', null, () => {
             handlerReached = true;
-            return orResponse().json({ reached: true } as const);
+            return orResponse().json({ reached: true });
         }));
 
         const response = await httpRequest(server, {
@@ -472,7 +472,7 @@ describe('features: route matching and fallthrough', () => {
 
     test('HEAD request matches GET handlers and returns no body', async () => {
         const server = await createTestServer(orHandler(['GET'], '/resource', null, () => {
-            return orResponse().json({ data: 'test' } as const);
+            return orResponse().json({ data: 'test' });
         }));
 
         const response = await httpRequest(server, {
@@ -489,7 +489,7 @@ describe('features: route matching and fallthrough', () => {
         let handlerMethod = '';
         const server = await createTestServer(orHandler(['GET'], '/method-check', null, (req: any) => {
             handlerMethod = req.method;
-            return orResponse().json({ method: req.method } as const);
+            return orResponse().json({ method: req.method });
         }));
 
         await httpRequest(server, {
@@ -502,7 +502,7 @@ describe('features: route matching and fallthrough', () => {
 
     test('HEAD request to unmatched path returns 404 with no body', async () => {
         const server = await createTestServer(orHandler(['GET'], '/known', null, () => {
-            return orResponse().json({ ok: true } as const);
+            return orResponse().json({ ok: true });
         }));
 
         const response = await httpRequest(server, {
@@ -523,7 +523,7 @@ describe('features: route matching and fallthrough', () => {
             }),
             orHandler(['GET'], '/chain', null, () => {
                 calls.push('second');
-                return orResponse().json({ calls } as const);
+                return orResponse().json({ calls });
             }),
         ]);
 
@@ -539,11 +539,11 @@ describe('features: route matching and fallthrough', () => {
         let secondReached = false;
         const server = await createTestServer([
             orHandler(['GET'], '/chain', null, () => {
-                return orResponse().json({ handler: 'first' } as const);
+                return orResponse().json({ handler: 'first' });
             }),
             orHandler(['GET'], '/chain', null, () => {
                 secondReached = true;
-                return orResponse().json({ handler: 'second' } as const);
+                return orResponse().json({ handler: 'second' });
             }),
         ]);
 
@@ -562,7 +562,7 @@ describe('features: route matching and fallthrough', () => {
             return orResponse().json({
                 teamId: params.teamId ?? null,
                 memberId: params.memberId ?? null,
-            } as const);
+            });
         }));
 
         const response = await httpRequest(server, {
@@ -587,11 +587,11 @@ describe('features: validations', () => {
             failResponse: (errors) => {
                 return orResponse().status(400).json({
                     bodyError: Boolean(errors.bodyError),
-                } as const);
+                });
             },
         }, () => {
             handlerReached = true;
-            return orResponse().json({ ok: true } as const);
+            return orResponse().json({ ok: true });
         }));
 
         const response = await httpRequest(server, {
@@ -616,12 +616,12 @@ describe('features: validations', () => {
             params: z.object({
                 id: z.string().transform(value => Number(value)),
             }),
-            failResponse: () => orResponse().status(400).json({ ok: false } as const),
+            failResponse: () => orResponse().status(400).json({ ok: false }),
         }, req => {
             return orResponse().json({
                 id: req.params.id,
                 page: req.query.page,
-            } as const);
+            });
         }));
 
         const response = await httpRequest(server, {
@@ -650,11 +650,11 @@ describe('features: validations', () => {
                     name: file.name.toUpperCase(),
                 })),
             }),
-            failResponse: () => orResponse().status(400).json({ ok: false } as const),
+            failResponse: () => orResponse().status(400).json({ ok: false }),
         } as any, req => {
             return orResponse().json({
                 fileName: (req.files as any).upload.name,
-            } as const);
+            });
         }));
 
         const response = await httpRequest(server, {
@@ -678,7 +678,7 @@ describe('features: nested routers', () => {
         const server = await createRouterServer(orRouter('', [
             orRouter('/api', [
                 orHandler(['GET'], '/status', null, () => {
-                    return orResponse().json({ ok: true } as const);
+                    return orResponse().json({ ok: true });
                 }),
             ]),
         ]));
@@ -696,7 +696,7 @@ describe('features: nested routers', () => {
             orRouter('/api', [
                 orRouter('/v1', [
                     orHandler(['GET'], '/status', null, () => {
-                        return orResponse().json({ version: 1 } as const);
+                        return orResponse().json({ version: 1 });
                     }),
                 ]),
             ]),
@@ -716,7 +716,7 @@ describe('features: nested routers', () => {
                 orHandler(['GET'], '/feature', null, () => orNext),
             ]),
             orHandler(['GET'], '/api/feature', null, () => {
-                return orResponse().json({ fallback: true } as const);
+                return orResponse().json({ fallback: true });
             }),
         ]));
 
@@ -731,7 +731,7 @@ describe('features: nested routers', () => {
     test('matches a top-level router with a non-empty prefix', async () => {
         const server = await createRouterServer(orRouter('/api', [
             orHandler(['GET'], '/status', null, () => {
-                return orResponse().json({ ok: true } as const);
+                return orResponse().json({ ok: true });
             }),
         ]));
 
@@ -746,7 +746,7 @@ describe('features: nested routers', () => {
     test('router prefix /shows with root handler / matches request to /shows', async () => {
         const server = await createRouterServer(orRouter('/shows', [
             orHandler(['GET'], '/', null, () => {
-                return orResponse().json({ ok: true } as const);
+                return orResponse().json({ ok: true });
             }),
         ]));
 
@@ -760,7 +760,7 @@ describe('features: nested routers', () => {
 
     test('matches router -> router -> router /cookies -> handler GET /', () => {
         const handler = orHandler(['GET'], '/', null, () => {
-            return orResponse().json({ cookies: true } as const);
+            return orResponse().json({ cookies: true });
         });
 
         const cookiesRouter = orRouter('/cookies', [handler]);
@@ -794,7 +794,7 @@ describe('features: nested routers', () => {
         const server = await createRouterServer(orRouter('', [
             orRouter('/api', [
                 orHandler(['GET'], '/status', null, () => {
-                    return orResponse().json({ ok: true } as const);
+                    return orResponse().json({ ok: true });
                 }),
             ]),
         ]));
@@ -811,7 +811,7 @@ describe('features: nested routers', () => {
         const server = await createRouterServer(orRouter('', [
             orRouter('/foo', [
                 orHandler(['GET'], '/:id', null, () => {
-                    return orResponse().json({ reached: true } as const);
+                    return orResponse().json({ reached: true });
                 }),
             ]),
         ]));
@@ -828,7 +828,7 @@ describe('features: nested routers', () => {
         const server = await createRouterServer(orRouter('', [
             orRouter('/foo/bar', [
                 orHandler(['GET'], '/:id', null, () => {
-                    return orResponse().json({ reached: true } as const);
+                    return orResponse().json({ reached: true });
                 }),
             ]),
         ]));
@@ -844,7 +844,7 @@ describe('features: nested routers', () => {
     test('does not match a top-level param route when the request path is the root', async () => {
         const server = await createRouterServer(orRouter('', [
             orHandler(['GET'], '/:id', null, () => {
-                return orResponse().json({ reached: true } as const);
+                return orResponse().json({ reached: true });
             }),
         ]));
 
@@ -861,7 +861,7 @@ describe('features: nested routers', () => {
             orRouter('/a', [
                 orRouter('/b', [
                     orHandler(['GET'], '/:id', null, () => {
-                        return orResponse().json({ reached: true } as const);
+                        return orResponse().json({ reached: true });
                     }),
                 ]),
             ]),
@@ -879,7 +879,7 @@ describe('features: nested routers', () => {
         const server = await createRouterServer(orRouter('', [
             orRouter('/foo', [
                 orHandler(['GET'], '/:id/extra', null, () => {
-                    return orResponse().json({ reached: true } as const);
+                    return orResponse().json({ reached: true });
                 }),
             ]),
         ]));
@@ -896,7 +896,7 @@ describe('features: nested routers', () => {
         const server = await createRouterServer(orRouter('/api', [
             orRouter('/foo', [
                 orHandler(['GET'], '/:id', null, () => {
-                    return orResponse().json({ reached: true } as const);
+                    return orResponse().json({ reached: true });
                 }),
             ]),
         ]));
@@ -915,7 +915,7 @@ describe('features: nested routers', () => {
                 // @ts-ignore idk why there is an error. sometimes there is an error and sometimes there is not
                 orHandler(['GET'], '/:id', null, req => {
                     const params = req.params as Record<string, string>;
-                    return orResponse().json({ id: params.id ?? null } as const);
+                    return orResponse().json({ id: params.id ?? null });
                 }),
             ]),
         ]));
@@ -934,7 +934,7 @@ describe('features: nested routers', () => {
                 // @ts-ignore idk why there is an error. sometimes there is an error and sometimes there is not
                 orHandler(['GET'], '/:id', null, req => {
                     const params = req.params as Record<string, string>;
-                    return orResponse().json({ id: params.id ?? null } as const);
+                    return orResponse().json({ id: params.id ?? null });
                 }),
             ]),
         ]));
@@ -952,7 +952,7 @@ describe('features: nested routers', () => {
             // @ts-ignore idk why there is an error. sometimes there is an error and sometimes there is not
             orHandler('GET', '/:id', null, req => {
                 const params = req.params as Record<string, string>;
-                return orResponse().json({ id: params.id ?? null } as const);
+                return orResponse().json({ id: params.id ?? null });
             }),
         ]));
 
@@ -971,7 +971,7 @@ describe('features: direct execute APIs', () => {
             orHandler(['GET'], '/direct/:id', null, (req: any) => {
                 const params = req.params as Record<string, string>;
 
-                return orResponse().json({ id: params.id ?? null } as const);
+                return orResponse().json({ id: params.id ?? null });
             }),
         ]);
 
@@ -1003,8 +1003,8 @@ describe('features: direct execute APIs', () => {
         const app = orApp(orRouter('', [
             orHandler(['GET'], '/direct', null, () => orResponse().text('ok')),
         ]), {
-            errorResponse: orResponse().status(500).json({ ok: false } as const),
-            noHandlerResponse: () => orResponse().status(404).json({ ok: false } as const),
+            errorResponse: orResponse().status(500).json({ ok: false }),
+            noHandlerResponse: () => orResponse().status(404).json({ ok: false }),
             addResponseHeaders: async () => ({ 'X-Direct': 'yes' }),
             addResponseCookies: async () => ({ direct: { value: 'yes' } }),
         });
@@ -1088,7 +1088,7 @@ describe('features: response helpers', () => {
                     one: { value: '1' },
                     two: { value: '2', maxAge: 10 },
                 })
-                .json({ ok: true } as const);
+                .json({ ok: true });
         }));
 
         const response = await httpRequest(server, {
@@ -1107,10 +1107,10 @@ describe('features: response helpers', () => {
 describe('features: app options and error handling', () => {
     test('adds global response headers and cookies after handler execution', async () => {
         const app = orApp(orRouter('', [
-            orHandler(['GET'], '/global', null, () => orResponse().json({ ok: true } as const)),
+            orHandler(['GET'], '/global', null, () => orResponse().json({ ok: true })),
         ]), {
-            errorResponse: orResponse().status(500).json({ ok: false } as const),
-            noHandlerResponse: () => orResponse().status(404).json({ ok: false } as const),
+            errorResponse: orResponse().status(500).json({ ok: false }),
+            noHandlerResponse: () => orResponse().status(404).json({ ok: false }),
             addResponseHeaders: () => ({
                 'X-App-Header': 'present',
             }),
@@ -1137,16 +1137,16 @@ describe('features: app options and error handling', () => {
             orHandler(['POST'], '/async/:id', {
                 body: z.object({ ok: z.literal(true) }),
                 params: z.object({ id: z.string() }),
-                failResponse: async () => orResponse().status(400).json({ ok: false } as const),
+                failResponse: async () => orResponse().status(400).json({ ok: false }),
             }, async (req: any) => {
                 return orResponse().json({
                     id: req.params.id,
                     ok: req.body.ok,
-                } as const);
+                });
             }),
         ]), {
-            errorResponse: orResponse().status(500).json({ ok: false } as const),
-            noHandlerResponse: async () => orResponse().status(404).json({ ok: false } as const),
+            errorResponse: orResponse().status(500).json({ ok: false }),
+            noHandlerResponse: async () => orResponse().status(404).json({ ok: false }),
             addResponseHeaders: async () => ({ 'X-Async': 'yes' }),
             addResponseCookies: async () => ({ async: { value: 'yes' } }),
         });
@@ -1178,11 +1178,11 @@ describe('features: app options and error handling', () => {
                 throw new Error('secret-internal-message');
             }),
         ]), {
-            errorResponse: orResponse().status(500).json({ fallback: true } as const),
-            noHandlerResponse: () => orResponse().status(404).json({ ok: false } as const),
+            errorResponse: orResponse().status(500).json({ fallback: true }),
+            noHandlerResponse: () => orResponse().status(404).json({ ok: false }),
             errorResponseFunction: (_req, error) => {
                 expect(error).toBeInstanceOf(Error);
-                return orResponse().status(503).json({ handled: true } as const);
+                return orResponse().status(503).json({ handled: true });
             },
         });
 
@@ -1198,10 +1198,10 @@ describe('features: app options and error handling', () => {
 
     test('falls back to errorResponse when addResponseHeaders throws', async () => {
         const app = orApp(orRouter('', [
-            orHandler(['GET'], '/headers-fail', null, () => orResponse().json({ ok: true } as const)),
+            orHandler(['GET'], '/headers-fail', null, () => orResponse().json({ ok: true })),
         ]), {
-            errorResponse: orResponse().status(500).json({ fallback: true } as const),
-            noHandlerResponse: () => orResponse().status(404).json({ ok: false } as const),
+            errorResponse: orResponse().status(500).json({ fallback: true }),
+            noHandlerResponse: () => orResponse().status(404).json({ ok: false }),
             addResponseHeaders: () => {
                 throw new Error('global-header-failed');
             },
@@ -1221,12 +1221,12 @@ describe('features: app options and error handling', () => {
         const invalidHandlerApp = orApp(orRouter('', [
             orHandler(['GET'], '/invalid-handler', null, () => ({ invalid: true }) as any),
         ]), {
-            errorResponse: orResponse().status(500).json({ fallback: true } as const),
-            noHandlerResponse: () => orResponse().status(404).json({ ok: false } as const),
+            errorResponse: orResponse().status(500).json({ fallback: true }),
+            noHandlerResponse: () => orResponse().status(404).json({ ok: false }),
         });
 
         const invalidNoHandlerApp = orApp(orRouter('', []), {
-            errorResponse: orResponse().status(500).json({ fallback: true } as const),
+            errorResponse: orResponse().status(500).json({ fallback: true }),
             noHandlerResponse: (() => ({ invalid: true })) as any,
         });
 
@@ -1235,8 +1235,8 @@ describe('features: app options and error handling', () => {
                 throw new Error('boom');
             }),
         ]), {
-            errorResponse: orResponse().status(500).json({ fallback: true } as const),
-            noHandlerResponse: () => orResponse().status(404).json({ ok: false } as const),
+            errorResponse: orResponse().status(500).json({ fallback: true }),
+            noHandlerResponse: () => orResponse().status(404).json({ ok: false }),
             errorResponseFunction: (() => ({ invalid: true })) as any,
         });
 
@@ -1244,10 +1244,10 @@ describe('features: app options and error handling', () => {
             orHandler(['POST'], '/validation', {
                 body: z.object({ ok: z.literal(true) }),
                 failResponse: (() => ({ invalid: true })) as any,
-            }, () => orResponse().json({ ok: true } as const)),
+            }, () => orResponse().json({ ok: true })),
         ]), {
-            errorResponse: orResponse().status(500).json({ fallback: true } as const),
-            noHandlerResponse: () => orResponse().status(404).json({ ok: false } as const),
+            errorResponse: orResponse().status(500).json({ fallback: true }),
+            noHandlerResponse: () => orResponse().status(404).json({ ok: false }),
         });
 
         const invalidHandlerServer = await listenToApp(invalidHandlerApp);
@@ -1305,7 +1305,7 @@ describe('edge cases: route definitions', () => {
         const server = await createTestServer(orHandler(['GET'], '/bad-cookie', null, () => {
             return orResponse()
                 .cookie('bad', 'value', { sameSite: 'none', secure: false, partitioned: false })
-                .json({ ok: true } as const);
+                .json({ ok: true });
         }));
 
         const response = await httpRequest(server, {
@@ -1321,7 +1321,7 @@ describe('edge cases: route definitions', () => {
         const server = await createTestServer(orHandler(['GET'], '/bad-header', null, () => {
             return orResponse()
                 .header('X-Bad', 'safe\r\nInjected: bad')
-                .json({ ok: true } as const);
+                .json({ ok: true });
         }));
 
         const response = await httpRequest(server, {
@@ -1339,7 +1339,7 @@ describe('security: cookies', () => {
         const server = await createTestServer(orHandler(['GET'], '/cookies', null, req => {
             return orResponse().json({
                 theme: req.cookies.theme ?? null,
-            } as const);
+            });
         }));
 
         const response = await httpRequest(server, {
@@ -1359,7 +1359,7 @@ describe('security: cookies', () => {
                 constructorCookie: req.cookies.constructor as any ?? null,
                 prototypeCookie: req.cookies.prototype ?? null,
                 unsafe: req.cookies.unsafe ?? null,
-            } as const);
+            });
         }));
 
         const response = await httpRequest(server, {
@@ -1381,7 +1381,7 @@ describe('security: cookies', () => {
         const server = await createTestServer(orHandler(['GET'], '/set-cookie', null, () => {
             return orResponse()
                 .cookie('session', 'a b;c=ok')
-                .json({ ok: true } as const);
+                .json({ ok: true });
         }));
 
         const response = await httpRequest(server, {
@@ -1402,7 +1402,7 @@ describe('security: request normalization', () => {
                 constructorQuery: req.query.constructor as any ?? null,
                 prototypeQuery: req.query.prototype ?? null,
                 safe: req.query.safe ?? null,
-            } as const);
+            });
         }));
 
         const response = await httpRequest(server, {
@@ -1423,7 +1423,7 @@ describe('security: request normalization', () => {
                 next: req.query.next ?? null,
                 multi: req.query.multi ?? null,
                 empty: req.query.empty ?? null,
-            } as const);
+            });
         }));
 
         const response = await httpRequest(server, {
@@ -1442,7 +1442,7 @@ describe('security: request normalization', () => {
 
         const server = await createTestServer(orHandler('*', '/method', null, () => {
             handlerReached = true;
-            return orResponse().json({ reached: true } as const);
+            return orResponse().json({ reached: true });
         }));
 
         const response = await httpRequest(server, {
@@ -1460,7 +1460,7 @@ describe('security: headers', () => {
         const server = await createTestServer(orHandler(['GET'], '/headers', null, req => {
             return orResponse().json({
                 token: req.headers['x-test-token'] ?? null,
-            } as const);
+            });
         }));
 
         const response = await httpRequest(server, {
@@ -1482,7 +1482,7 @@ describe('security: headers', () => {
                 constructorHeader: req.headers.constructor as any ?? null,
                 prototypeHeader: req.headers.prototype ?? null,
                 safe: req.headers['x-safe'] ?? null,
-            } as const);
+            });
         }));
 
         const response = await httpRequest(server, {
@@ -1506,7 +1506,7 @@ describe('security: headers', () => {
         const server = await createTestServer(orHandler(['GET'], '/headers', null, () => {
             return orResponse()
                 .header('X-Security-Test', 'present')
-                .json({ ok: true } as const);
+                .json({ ok: true });
         }));
 
         const response = await httpRequest(server, {
@@ -1525,7 +1525,7 @@ describe('security: path normalization and route matching', () => {
         const server = await createTestServer(orHandler(['GET'], '/admin', null, req => {
             return orResponse().json({
                 path: req.path,
-            } as const);
+            });
         }));
 
         const response = await httpRequest(server, {
@@ -1540,7 +1540,7 @@ describe('security: path normalization and route matching', () => {
         let handlerReached = false;
         const server = await createTestServer(orHandler(['GET'], '/admin', null, () => {
             handlerReached = true;
-            return orResponse().json({ reached: true } as const);
+            return orResponse().json({ reached: true });
         }));
 
         const response = await rawHttpRequest(server, [
@@ -1558,7 +1558,7 @@ describe('security: path normalization and route matching', () => {
 
     test('does not match encoded traversal after URL parsing normalizes it', async () => {
         const server = await createTestServer(orHandler(['GET'], '/files/:name', null, () => {
-            return orResponse().json({ reached: true } as const);
+            return orResponse().json({ reached: true });
         }));
 
         const response = await httpRequest(server, {
@@ -1575,7 +1575,7 @@ describe('security: path normalization and route matching', () => {
 
             return orResponse().json({
                 name: params.name ?? null,
-            } as const);
+            });
         }));
 
         const response = await httpRequest(server, {
@@ -1588,7 +1588,7 @@ describe('security: path normalization and route matching', () => {
 
     test('does not let encoded literal paths bypass exact route matching', async () => {
         const server = await createTestServer(orHandler(['GET'], '/admin', null, () => {
-            return orResponse().json({ reached: true } as const);
+            return orResponse().json({ reached: true });
         }));
 
         const response = await httpRequest(server, {
@@ -1601,7 +1601,7 @@ describe('security: path normalization and route matching', () => {
 
     test('does not match extra path segments without an explicit rest route', async () => {
         const server = await createTestServer(orHandler(['GET'], '/admin', null, () => {
-            return orResponse().json({ reached: true } as const);
+            return orResponse().json({ reached: true });
         }));
 
         const response = await httpRequest(server, {
@@ -1618,7 +1618,7 @@ describe('security: path normalization and route matching', () => {
 
             return orResponse().json({
                 name: params.name ?? null,
-            } as const);
+            });
         }));
 
         const response = await httpRequest(server, {
@@ -1632,7 +1632,7 @@ describe('security: path normalization and route matching', () => {
     test('only explicit rest routes match additional path segments', async () => {
         const server = await createTestServer([
             orHandler(['GET'], '/files/:name', null, () => {
-                return orResponse().json({ type: 'single' } as const);
+                return orResponse().json({ type: 'single' });
             }),
             orHandler(['GET'], '/files/*', null, req => {
                 const params = req.params as Record<string, string>;
@@ -1640,7 +1640,7 @@ describe('security: path normalization and route matching', () => {
                 return orResponse().json({
                     type: 'rest',
                     rest: params['*'] ?? null,
-                } as const);
+                });
             }),
         ]);
 
@@ -1659,7 +1659,7 @@ describe('security: path normalization and route matching', () => {
         let handlerReached = false;
         const server = await createTestServer(orHandler(['GET'], '/abc/:id/foo', null, () => {
             handlerReached = true;
-            return orResponse().json({ reached: true } as const);
+            return orResponse().json({ reached: true });
         }));
 
         const response = await httpRequest(server, {
@@ -1675,7 +1675,7 @@ describe('security: path normalization and route matching', () => {
             const params = req.params as Record<string, string>;
             return orResponse().json({
                 rest: params['*'] ?? null,
-            } as const);
+            });
         }));
 
         const response = await httpRequest(server, {
@@ -1692,7 +1692,7 @@ describe('security: body parsing', () => {
 
         const server = await createTestServer(orHandler(['POST'], '/json', null, () => {
             handlerReached = true;
-            return orResponse().json({ reached: true } as const);
+            return orResponse().json({ reached: true });
         }));
 
         const response = await httpRequest(server, {
@@ -1713,7 +1713,7 @@ describe('security: body parsing', () => {
         let handlerReached = false;
         const server = await createTestServer(orHandler(['POST'], '/json-empty', null, () => {
             handlerReached = true;
-            return orResponse().json({ reached: true } as const);
+            return orResponse().json({ reached: true });
         }));
 
         const response = await httpRequest(server, {
@@ -1807,7 +1807,7 @@ describe('security: body parsing', () => {
                 safeFile: (req as any).files?.upload?.name ?? null,
                 protoFile: (req as any).files?.__proto__ ?? null,
                 constructorFile: (req as any).files?.constructor ?? null,
-            } as const);
+            });
         }));
 
         const response = await httpRequest(server, {
@@ -1850,7 +1850,7 @@ describe('security: body parsing', () => {
                 protoFile: capturedFiles?.__proto__ ?? null,
                 constructorFile: capturedFiles?.constructor ?? null,
                 prototypeFile: capturedFiles?.prototype ?? null,
-            } as const);
+            });
         }));
 
         const response = await httpRequest(server, {
@@ -1888,7 +1888,7 @@ describe('security: body parsing', () => {
                 proto: body.__proto__ as any ?? null,
                 prototype: body.prototype as any ?? null,
                 constructorValue: body.constructor as any ?? null,
-            } as const);
+            });
         }));
 
         const response = await httpRequest(server, {
@@ -1934,7 +1934,7 @@ describe('more coverage: route matching internals and request state', () => {
             orHandler(['GET'], '/state', null, req => {
                 return orResponse().json({
                     user: (req.data as any).user ?? null,
-                } as const);
+                });
             }),
         ]);
 
@@ -1954,11 +1954,11 @@ describe('more coverage: route matching internals and request state', () => {
                     header: req.headers['x-test'],
                     cookie: req.cookies.session,
                     ip: req.ip,
-                } as const);
+                });
             }),
         ]), {
-            errorResponse: orResponse().status(500).json({ ok: false } as const),
-            noHandlerResponse: () => orResponse().status(404).json({ ok: false } as const),
+            errorResponse: orResponse().status(500).json({ ok: false }),
+            noHandlerResponse: () => orResponse().status(404).json({ ok: false }),
         });
 
         const response = await app.execute({
@@ -1991,7 +1991,7 @@ describe('more coverage: URL and query edge cases', () => {
         let handlerReached = false;
         const server = await createTestServer(orHandler(['GET'], '/admin', null, () => {
             handlerReached = true;
-            return orResponse().json({ reached: true } as const);
+            return orResponse().json({ reached: true });
         }));
 
         const response = await rawHttpRequest(server, [
@@ -2011,7 +2011,7 @@ describe('more coverage: URL and query edge cases', () => {
         const server = await createTestServer(orHandler(['GET'], '/search', null, req => {
             return orResponse().json({
                 q: req.query.q ?? null,
-            } as const);
+            });
         }));
 
         const response = await httpRequest(server, {
@@ -2027,7 +2027,7 @@ describe('more coverage: URL and query edge cases', () => {
             return orResponse().json({
                 blank: req.query[''] ?? null,
                 safe: req.query.safe ?? null,
-            } as const);
+            });
         }));
 
         const response = await httpRequest(server, {
@@ -2046,7 +2046,7 @@ describe('more coverage: URL and query edge cases', () => {
             return orResponse().json({
                 value: req.query.a ?? null,
                 b: req.query.b ?? null,
-            } as const);
+            });
         }));
 
         const response = await httpRequest(server, {
@@ -2068,7 +2068,7 @@ describe('more coverage: cookie edge cases', () => {
                 valid: req.cookies.valid ?? null,
                 spacedName: req.cookies['bad name'] ?? null,
                 rawSpace: req.cookies.rawspace ?? null,
-            } as const);
+            });
         }));
 
         const response = await httpRequest(server, {
@@ -2090,7 +2090,7 @@ describe('more coverage: cookie edge cases', () => {
         const server = await createTestServer(orHandler(['GET'], '/cookie-malformed', null, req => {
             return orResponse().json({
                 malformed: req.cookies.malformed ?? null,
-            } as const);
+            });
         }));
 
         const response = await httpRequest(server, {
@@ -2110,7 +2110,7 @@ describe('more coverage: cookie edge cases', () => {
         const server = await createTestServer(orHandler(['GET'], '/cookie-duplicates', null, req => {
             return orResponse().json({
                 session: req.cookies.session ?? null,
-            } as const);
+            });
         }));
 
         const response = await httpRequest(server, {
@@ -2128,23 +2128,23 @@ describe('more coverage: cookie edge cases', () => {
         const cases = [
             {
                 path: '/bad-cookie-name',
-                response: () => orResponse().cookie('bad name', 'value').json({ ok: true } as const),
+                response: () => orResponse().cookie('bad name', 'value').json({ ok: true }),
             },
             {
                 path: '/bad-cookie-path',
-                response: () => orResponse().cookie('good', 'value', { path: '/safe;bad' }).json({ ok: true } as const),
+                response: () => orResponse().cookie('good', 'value', { path: '/safe;bad' }).json({ ok: true }),
             },
             {
                 path: '/bad-cookie-domain',
-                response: () => orResponse().cookie('good', 'value', { domain: '-bad.example' }).json({ ok: true } as const),
+                response: () => orResponse().cookie('good', 'value', { domain: '-bad.example' }).json({ ok: true }),
             },
             {
                 path: '/bad-cookie-max-age',
-                response: () => orResponse().cookie('good', 'value', { maxAge: -1 }).json({ ok: true } as const),
+                response: () => orResponse().cookie('good', 'value', { maxAge: -1 }).json({ ok: true }),
             },
             {
                 path: '/bad-cookie-partitioned',
-                response: () => orResponse().cookie('good', 'value', { secure: false, partitioned: true }).json({ ok: true } as const),
+                response: () => orResponse().cookie('good', 'value', { secure: false, partitioned: true }).json({ ok: true }),
             },
         ];
 
@@ -2214,7 +2214,7 @@ describe('stress and limits', () => {
 
             return orResponse().json({
                 id: (req.data as Record<string, string>).id ?? null,
-            } as const);
+            });
         }));
 
         const responses = await Promise.all(Array.from({ length: 40 }, async (_, index) => {
@@ -2235,7 +2235,7 @@ describe('stress and limits', () => {
         const server = await createTestServer(orHandler(['GET'], '/slow-handler', null, async () => {
             await new Promise(resolve => setTimeout(resolve, 150));
 
-            return orResponse().json({ ok: true } as const);
+            return orResponse().json({ ok: true });
         }));
 
         const startedAt = Date.now();
@@ -2252,7 +2252,7 @@ describe('stress and limits', () => {
         let handlerReached = false;
         const server = await createTestServer(orHandler(['POST'], '/slow-body', null, () => {
             handlerReached = true;
-            return orResponse().json({ reached: true } as const);
+            return orResponse().json({ reached: true });
         }));
 
         server.setTimeout(100);
@@ -2275,7 +2275,7 @@ describe('stress and limits', () => {
         let handlerReached = false;
         const server = await createTestServer(orHandler(['POST'], '/oversized-json', null, () => {
             handlerReached = true;
-            return orResponse().json({ reached: true } as const);
+            return orResponse().json({ reached: true });
         }));
 
         const response = await largeJsonRequest(server, '/oversized-json', 92);
@@ -2299,7 +2299,7 @@ describe('stress and limits', () => {
                 name: req.files.upload?.name ?? null,
                 mimeType: req.files.upload?.mimeType ?? null,
                 size: req.files.upload?.buffer.length ?? null,
-            } as const);
+            });
         }));
 
         const response = await httpRequest(server, {
@@ -2341,7 +2341,7 @@ describe('stress and limits', () => {
                 hasField99: (req.body as any).field99,
                 hasField100: (req.body as any).field100 ?? null,
                 fileCount: (req.files as any).upload ? 1 : 0,
-            } as const);
+            });
         }));
 
         const response = await httpRequest(server, {
